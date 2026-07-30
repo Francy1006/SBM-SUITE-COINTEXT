@@ -1,0 +1,42 @@
+{
+  "project_name": "dp-api",
+  "workflow": "context-upgrade",
+  "execution_mode": "evidence",
+  "user_prompt_file": null,
+  "output_filename": "context-upgrade.zip",
+  "allowed_files": [
+    "SBM-SUITE/PROJECT_CONTEXT.md",
+    "SBM-SUITE/README.md",
+    "SBM-SUITE/context/SUITE_CONTEXT.md",
+    "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md",
+    "SBM-SUITE/dp-api/README.md",
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "USER_PROMPT.md",
+    "manifest.json"
+  ],
+  "updated_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md"
+  ],
+  "generated_at": "2026-07-30T06:21:25.602955+00:00",
+  "content_hashes": {
+    "EXECUTIVE_README.md": "ef957b87c24e72855985298d5797bc51280fa4964ff9150738fcb3398eaf692a",
+    "COMMIT_MESSAGE.md": "9200c5af1f4d33f5e6403a06db89cf81a94755792bf120c27402ffc3e98a52f6"
+  },
+  "commit": {
+    "type": "fix",
+    "scope": "contexts",
+    "subject": "require format contract for export",
+    "message_file": "COMMIT_MESSAGE.md"
+  },
+  "rag": {
+    "source_manifest": "manifest.json",
+    "retrieved_chunk_count": 8,
+    "retrieved_sources": [
+      "SBM-SUITE/dp-api/context/DEPLOY_CONTEXT.md",
+      "SBM-SUITE/context/SUITE_CONTEXT.md",
+      "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md"
+    ]
+  }
+}

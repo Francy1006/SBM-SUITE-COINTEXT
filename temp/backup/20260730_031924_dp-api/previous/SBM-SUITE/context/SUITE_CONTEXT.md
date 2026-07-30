@@ -1,6 +1,6 @@
 # SUITE_CONTEXT.md
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-07-29
 >
 > **Purpose**
 >
@@ -794,31 +794,3 @@ SBM-SUITE/context/qa_context.md
 ```
 
 When sources disagree, report the conflict and verify the current repositories and runtime before modifying code.
-
-## Context deployment lifecycle
-
-```text
-Project Git evidence
-→ context-deploy.sh
-→ POST /contexts/export
-→ Qdrant sbm_contexts
-→ RAG-selected chunks + complete authorized files
-→ context-package.zip
-→ ChatGPT
-→ context-upgrade.zip
-→ context-upgrade.sh
-→ POST /contexts/upgrade
-→ backup + atomic replacement
-```
-
-Rules:
-
-1. Qdrant stores chunks and embeddings; vectors are never exported.
-2. `retrieved-context.md` contains the relevant RAG result.
-3. Complete files are included only when ChatGPT may safely update them.
-4. Protected QA, business, deploy and system-prompt files are not replaced.
-5. Upgrade validates manifest metadata, paths and SHA-256 hashes.
-6. Existing files are backed up before replacement.
-7. Replacement is atomic and supports rollback.
-8. The input ZIP is deleted only after full success.
-9. Git Markdown remains the source of truth.

@@ -1,0 +1,56 @@
+{
+  "project_name": "dp-api",
+  "workflow": "context-upgrade",
+  "output_filename": "context-upgrade.zip",
+  "allowed_files": [
+    "SBM-SUITE/PROJECT_CONTEXT.md",
+    "SBM-SUITE/README.md",
+    "SBM-SUITE/context/SUITE_CONTEXT.md",
+    "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md",
+    "SBM-SUITE/dp-api/README.md",
+    "manifest.json",
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md"
+  ],
+  "updated_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md"
+  ],
+  "generated_at": "2026-07-30T01:20:42.211934-04:00",
+  "content_hashes": {
+    "EXECUTIVE_README.md": "1c96688d00bec2fc8c51e7c610080cfa83bad9cdbe4ae34a32c9c39177ecee1a",
+    "COMMIT_MESSAGE.md": "90a79d0ff6f9c47a18f12f013d9f7755090484b638397659c809aec7db6c109f"
+  },
+  "commit": {
+    "type": "chore",
+    "scope": "contexts",
+    "subject": "require format contract during export",
+    "message_file": "COMMIT_MESSAGE.md"
+  },
+  "rag": {
+    "source_manifest": "manifest.json",
+    "retrieved_chunk_count": 16,
+    "retrieved_sources": [
+      {
+        "source_path": "/suite/DP-API/README.md",
+        "archive_path": "SBM-SUITE/dp-api/README.md"
+      },
+      {
+        "source_path": "/suite/DP-API/context/DEPLOY_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/DEPLOY_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/DP-API/context/PROJECT_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/PROJECT_CONTEXT.md",
+        "archive_path": "SBM-SUITE/context/PROJECT_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/SUITE_CONTEXT.md",
+        "archive_path": "SBM-SUITE/context/SUITE_CONTEXT.md"
+      }
+    ]
+  }
+}
