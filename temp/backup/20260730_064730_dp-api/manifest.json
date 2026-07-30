@@ -1,0 +1,63 @@
+{
+  "project_name": "dp-api",
+  "workflow": "context-upgrade",
+  "execution_mode": "user-guided",
+  "user_prompt_file": "USER_PROMPT.md",
+  "output_filename": "context-upgrade.zip",
+  "allowed_files": [
+    "SBM-SUITE/PROJECT_CONTEXT.md",
+    "SBM-SUITE/README.md",
+    "SBM-SUITE/context/SUITE_CONTEXT.md",
+    "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md",
+    "SBM-SUITE/dp-api/README.md",
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "USER_PROMPT.md",
+    "manifest.json"
+  ],
+  "updated_files": [
+    "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md",
+    "USER_PROMPT.md",
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md"
+  ],
+  "generated_at": "2026-07-30T06:45:25.026396+00:00",
+  "content_hashes": {
+    "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md": "54cc14cc5379e28e26694e94539e3e96cc4724d4f591fa5621b52a94c8173490",
+    "USER_PROMPT.md": "5319ba3ee4ec857f54aa21311c8beeb66e75e0648f70a760f97aef97a73ef1c9",
+    "EXECUTIVE_README.md": "e24cb9208fd1c4a0fe872aa9bcf0c34979c45f6174232fed354dd400cb8abbb1",
+    "COMMIT_MESSAGE.md": "8c4b8d1acf455a284442d351c05fe57150886ed5ed8d9daa5dcc2d4201df2183"
+  },
+  "commit": {
+    "type": "docs",
+    "scope": "qa",
+    "subject": "define QA procedure objective",
+    "message_file": "COMMIT_MESSAGE.md"
+  },
+  "rag": {
+    "source_manifest": "manifest.json",
+    "retrieved_chunk_count": 16,
+    "retrieved_sources": [
+      {
+        "source_path": "/suite/DP-API/README.md",
+        "archive_path": "SBM-SUITE/dp-api/README.md"
+      },
+      {
+        "source_path": "/suite/DP-API/context/DEPLOY_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/DEPLOY_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/DP-API/context/PROJECT_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/PROJECT_CONTEXT.md",
+        "archive_path": "SBM-SUITE/context/PROJECT_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/SUITE_CONTEXT.md",
+        "archive_path": "SBM-SUITE/context/SUITE_CONTEXT.md"
+      }
+    ]
+  }
+}
