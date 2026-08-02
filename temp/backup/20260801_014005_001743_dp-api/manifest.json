@@ -1,0 +1,67 @@
+{
+  "project_name": "dp-api",
+  "workflow": "context-upgrade",
+  "execution_mode": "evidence",
+  "user_prompt_file": null,
+  "output_filename": "context-upgrade.zip",
+  "allowed_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "manifest.json",
+    "patches/global-project-context.json",
+    "patches/suite-context.json"
+  ],
+  "updated_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "patches/global-project-context.json",
+    "patches/suite-context.json"
+  ],
+  "generated_at": "2026-08-01T01:32:40.427390+00:00",
+  "content_hashes": {
+    "EXECUTIVE_README.md": "6bb6d55876e15c68a8e5001b9ca4b3bd9e6a5c6b536bd0f5ffe831bfcbdf95dc",
+    "COMMIT_MESSAGE.md": "9bc2c2293052d6521b3dcf33e34a8f7304478fbb4aada40115a663d61a90f94c",
+    "patches/global-project-context.json": "ffccf145b904661b37fd0e0c410a15f756748d0ab4a8239979775bdc16d9fbba",
+    "patches/suite-context.json": "3adacabcbb1fd3e3dd19bffcb28bd82157fd7a432acf6c8fcdec719e2e79235e"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "context",
+    "subject": "stabilize context and QA evidence workflows",
+    "message_file": "COMMIT_MESSAGE.md"
+  },
+  "rag": {
+    "source_manifest": "manifest.json",
+    "retrieved_chunk_count": 8,
+    "retrieved_sources": [
+      {
+        "source_path": "/suite/DP-API/context/DEPLOY_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/DEPLOY_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/DP-API/context/PROJECT_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/PROJECT_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/DP-API/context/QA_CONTEXT.md",
+        "archive_path": "SBM-SUITE/dp-api/context/QA_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/PROJECT_CONTEXT.md",
+        "archive_path": "SBM-SUITE/context/PROJECT_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/QA_CONTEXT.md",
+        "archive_path": "SBM-SUITE/context/QA_CONTEXT.md"
+      },
+      {
+        "source_path": "/suite/context/SYS_PROMPT.md",
+        "archive_path": "SBM-SUITE/context/SYS_PROMPT.md"
+      }
+    ]
+  },
+  "evidence": {
+    "project_tree_file": "project-tree.txt",
+    "qa_results_file": "qa-results.md"
+  }
+}

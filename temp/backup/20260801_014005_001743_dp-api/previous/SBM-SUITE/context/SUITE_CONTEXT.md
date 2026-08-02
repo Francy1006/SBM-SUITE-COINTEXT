@@ -294,8 +294,6 @@ Rules:
 - documentation packages use documentation chunks and updated contexts;
 - raw complete source files should not be exported when section-level patches are sufficient.
 
-Current context evidence includes Git diff, changed files, change summary, QA results, project tree and retrieved Qdrant chunks. Generated upgrades use validated section-level JSON patches rather than complete context replacements.
-
 ## 16. Deployment model
 
 Current stage:
@@ -360,44 +358,36 @@ Current verified direction:
 - Documentation lifecycle and `sbm_documentation` are planned.
 - `project-tree.txt` is planned as structural evidence for context deployment.
 
-Validated workflow state:
-
-- context deployment generates `project-tree.txt`, persists `context-export-response.json` and requires `status=completed`;
-- context upgrade requires exactly one named ZIP, validates the backend response and confirms input cleanup;
-- `qa-check.sh` creates bounded execution evidence in `context/qa-results.md`;
-- no successful QA execution, coverage value or SonarQube result is supplied in the current package.
-
 ## 20. Context deployment lifecycle
 
 ```text
-qa-check.sh
-→ execute tests and coverage
-→ execute SonarScanner only when tests and coverage succeed
-→ write bounded evidence to context/qa-results.md
-
-context-deploy.sh
-→ clean context input and output directories
-→ execute project-tree.sh when present
-→ require project-tree.txt
-→ collect Git and QA evidence
-→ call POST /contexts/export
-→ persist context-export-response.json
-→ require status=completed
-→ generate context-package.zip and parameterized SYS_PROMPT.md
-
-ChatGPT
-→ read FORMAT_CONTEXT.md and supplied evidence
-→ generate only authorized section-level JSON patches
-→ generate manifest.json from final ZIP contents
-
-context-upgrade.sh
-→ require exactly one context-upgrade.zip
-→ call POST /contexts/upgrade
-→ validate workflow, project_name, updated_files, backup_directory and input_cleaned
-→ confirm the input ZIP was removed only after success
+1. qa-check.sh
+2. execute tests, coverage and SonarQube
+3. context-deploy.sh
+4. clean context input and output
+5. generate project-tree.txt
+6. index contexts in sbm_contexts
+7. retrieve relevant chunks
+8. generate context-package.zip and SYS_PROMPT.md
+9. user uploads files to ChatGPT with or without additional prompt
+10. ChatGPT returns context-upgrade.zip
+11. user places ZIP in context/input
+12. context-upgrade.sh validates patches
+13. create timestamped context backup
+14. apply synchronized context patches atomically
+15. return commit message in terminal
+16. user reviews git status
 ```
 
-The backend remains the mandatory validation, backup, atomic replacement and rollback boundary.
+Required synchronized updates:
+
+- project `PROJECT_CONTEXT.md` → global `PROJECT_CONTEXT.md`;
+- project `QA_CONTEXT.md` → global `QA_CONTEXT.md`;
+- structural/API/body/technology changes → `SUITE_CONTEXT.md`;
+- brand or business capability changes → `BUSINESS_CONTEXT.md`;
+- security changes → `SECURITY_CONTEXT.md`;
+- data changes → `DATA_CONTEXT.md`;
+- architecture and product decisions → `DECISIONS_CONTEXT.md`.
 
 ## 21. Documentation lifecycle
 

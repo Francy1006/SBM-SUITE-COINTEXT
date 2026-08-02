@@ -1,198 +1,201 @@
 # QA_CONTEXT.md
 
-> **Last updated:** 2026-07-29
+> **Last updated:** 2026-07-30
 >
 > **Purpose**
 >
-> This document defines the transversal QA rules for **SBM Suite**. It applies when a feature, workflow, contract, deployment, or business operation involves one or more repositories.
+> Transversal QA context for **SBM Suite**. It summarizes quality policy, project QA status, test inventory, coverage, SonarQube, security validation, API validation, database validation, release criteria and accepted risks.
 >
-> Project-specific tests and quality rules belong to each repository's own `context/QA_CONTEXT.md`. This global context coordinates shared acceptance criteria and cross-project validation.
+> **Accuracy note**
+>
+> Only explicitly executed and evidenced results may be recorded as validated. Unknown counts, coverage, SonarQube results and dates remain `N/A`.
 
----
+## 1. Suite QA overview
 
-## 1. QA scope
-
-Use this context for:
+Global QA applies to:
 
 - frontend-to-API validation;
 - API-to-database integration;
 - cross-API workflows;
 - AI Tool-to-API validation;
-- authentication and authorization across components;
+- authentication and authorization;
 - tenant and brand isolation;
-- shared Docker network and service communication;
+- shared Docker services;
 - transversal smoke tests;
-- multi-repository regression testing;
+- multi-repository regression;
 - release acceptance involving more than one project.
 
-Do not use this file as the only QA source for a repository. Always combine it with the local project context.
+Project-specific test plans, fixtures, commands and detailed evidence remain in each project's `context/QA_CONTEXT.md`.
 
----
-
-## 2. Context reading order
-
-Before planning transversal QA, read:
-
-```text
-SBM-SUITE/project_context.md
-SBM-SUITE/context/SUITE_CONTEXT.md
-SBM-SUITE/context/BUSINESS_CONTEXT.md
-SBM-SUITE/context/QA_CONTEXT.md
-<project>/context/PROJECT_CONTEXT.md
-<project>/context/QA_CONTEXT.md
-<project>/context/DEPLOY_CONTEXT.md
-```
-
-For a workflow involving multiple projects, read the local context of every affected repository.
-
-If two contexts conflict:
-
-1. identify the conflict;
-2. verify the current code, runtime, contracts and database;
-3. do not assume which source is correct;
-4. update the stale context after validation.
-
----
-
-## 3. QA ownership model
-
-```text
-Global transversal QA
-→ SBM-SUITE/context/QA_CONTEXT.md
-
-Repository-specific QA
-→ <project>/context/QA_CONTEXT.md
-
-Deployment validation
-→ <project>/context/DEPLOY_CONTEXT.md
-
-Business acceptance
-→ SBM-SUITE/context/BUSINESS_CONTEXT.md
-```
-
-The global context defines cross-project expectations.
-
-The local context defines:
-
-- exact commands;
-- test suites;
-- coverage targets;
-- SonarQube configuration;
-- fixtures;
-- repository-specific risks;
-- local acceptance criteria.
-
----
-
-## 4. Core transversal principles
+## 2. Quality policy
 
 1. Validate behavior through public contracts.
-2. Do not test a component in isolation when the change crosses repositories.
-3. Preserve canonical ownership.
-4. Do not bypass the responsible API.
-5. Use the real integration boundary whenever practical.
-6. Keep test data isolated and deterministic.
-7. Do not mutate production or shared persistent data during QA.
-8. Do not run database migrations from application repositories when Flyway owns the schema.
-9. Verify both success and failure paths.
-10. Validate permissions and tenant isolation.
-11. Record exact commands and results.
-12. Stop when a required dependency or source of truth is missing.
-13. Do not treat a passing local unit test as proof of cross-suite compatibility.
-14. Do not modify unrelated projects during QA.
-15. Update affected QA contexts after acceptance.
+2. Test the canonical owner.
+3. Preserve project and business ownership boundaries.
+4. Use real integration boundaries when practical.
+5. Keep test data isolated and deterministic.
+6. Never mutate production or shared persistent data during QA.
+7. Never execute unauthorized migrations from application repositories.
+8. Validate success and failure paths.
+9. Validate permissions and tenant isolation.
+10. Record exact commands, evidence and results.
+11. Do not treat passing unit tests as proof of transversal compatibility.
+12. Keep project and global QA contexts synchronized.
+13. Do not hide code from coverage to improve metrics.
+14. Do not mark planned work as executed.
+15. Work one validated step at a time.
 
----
+## 3. Quality gates
 
-## 5. Standard transversal flow
+| Gate | Scope | Required evidence | Blocking |
+|---|---|---|---:|
+| Test execution | Project and transversal | Command, passed, failed, skipped and timestamp | 1 |
+| Coverage | Project | Coverage report and threshold result | 1 |
+| Static analysis | Project | Tool output and issue count | 1 |
+| SonarQube | Project | Quality Gate status and project key | 1 |
+| API contract | Affected API | Request, response, status and error validation | 1 |
+| Database compatibility | Database-sensitive changes | Schema, Flyway, DBML and model comparison | 1 |
+| Security | Protected flows | Authentication, authorization and isolation validation | 1 |
+| Integration | Cross-project flow | Consumer-to-provider evidence | 1 |
+| Failure paths | Changed behavior | Negative scenarios and rollback behavior | 1 |
+| Documentation | Context and documentation lifecycle | Updated authorized artifacts | 1 |
 
-For any multi-project change:
+A gate may be bypassed only through a documented accepted exception.
 
-```text
-identify affected repositories
-→ identify canonical owner
-→ identify public contracts
-→ verify current database source
-→ define test matrix
-→ validate each repository locally
-→ validate integrations
-→ validate failure paths
-→ validate permissions and isolation
-→ validate observability
-→ document results
-```
+## 4. Project QA summaries
 
----
+| Project | QA context | Test count | Passed | Failed | Coverage | SonarQube status | Last execution | Overall risk | Evidence |
+|---|---|---:|---:|---:|---|---|---|---:|---|
+| DP-API | `SBM-SUITE/DP-API/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | QA procedure objective pending |
+| SBM-API | `SBM-SUITE/SBM-API/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
+| SBM-MANAGER | `SBM-SUITE/SBM-MANAGER/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
+| SBM-DB | `SBM-SUITE/SBM-DB/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 4 | Database QA context pending |
+| SBM-AI-ASSISTANT | `SBM-SUITE/sbm-ai-assistant/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
 
-## 6. Required QA matrix
-
-Every transversal QA plan must include:
-
-| Area | Validation |
-|---|---|
-| Ownership | Correct project and domain own the behavior |
-| Contract | Request, response, status and error format |
-| Integration | Real consumer reaches the responsible provider |
-| Database | Mapping matches current PostgreSQL and Flyway |
-| Security | Authentication, authorization and tenant isolation |
-| Failure | Invalid input and unavailable dependency behavior |
-| Audit | User, timestamp and action are traceable |
-| Idempotency | Repeated requests do not create unintended effects |
-| Compatibility | Existing consumers continue working |
-| Observability | Logs and errors identify the failing component |
-| Documentation | Contexts and README remain synchronized |
-
----
-
-## 7. Frontend-to-API QA
-
-Applicable flow:
+Risk scale:
 
 ```text
-SBM-MANAGER
-→ DP-API or SBM-API
+0 = none
+1 = very low
+2 = low
+3 = medium
+4 = high
+5 = critical
 ```
+
+## 5. Test inventory
+
+| Test ID | Project | Description | Logic type | Components | Risk | Last execution | Result | Evidence |
+|---|---|---|---|---|---:|---|---|---|
+| QA-CONTEXT-001 | SBM Suite | Validate project QA context synchronization with global QA context | integration | context-deploy, context-upgrade, QA contexts | 4 | N/A | pending | No execution evidence |
+| QA-CONTEXT-002 | SBM Suite | Validate project context synchronization with global project context | integration | project contexts, context-upgrade | 4 | N/A | pending | No execution evidence |
+| QA-CONTEXT-003 | SBM Suite | Validate section patch structure and authorized paths | security | manifest, ZIP, patch validator | 5 | N/A | pending | No execution evidence |
+| QA-CONTEXT-004 | SBM Suite | Validate context backup and atomic rollback | integration | context-upgrade, filesystem | 5 | N/A | pending | No execution evidence |
+| QA-DOC-001 | SBM Suite | Validate documentation package authorized Markdown paths | security | documentation-upgrade, manifest | 5 | N/A | pending | Workflow not implemented |
+| QA-DOC-002 | SBM Suite | Validate documentation backup and replacement | integration | documentation-upgrade, filesystem | 4 | N/A | pending | Workflow not implemented |
+| QA-API-001 | SBM Suite | Validate frontend-to-canonical API routing | api | SBM-MANAGER, DP-API, SBM-API | 4 | N/A | pending | No transversal evidence |
+| QA-AI-001 | SBM Suite | Validate AI Tool uses canonical API without direct database access | security | SBM-AI-ASSISTANT, Tools, APIs | 5 | N/A | pending | Tool integration pending |
+| QA-TENANT-001 | SBM Suite | Deny cross-tenant read and write operations | security | authentication, authorization, APIs | 5 | N/A | pending | No transversal evidence |
+| QA-DB-001 | SBM Suite | Validate application models against PostgreSQL, Flyway and DBML | database | DP-API, SBM-API, SBM-DB | 5 | N/A | pending | No transversal evidence |
+
+Allowed logic types:
+
+```text
+unit
+integration
+api
+database
+security
+static-analysis
+coverage
+deployment
+```
+
+## 6. Coverage summary
+
+| Project | Tool | Coverage | Threshold | Status | Last execution | Evidence |
+|---|---|---|---|---|---|---|
+| DP-API | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+| SBM-API | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+| SBM-MANAGER | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+| SBM-DB | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+| SBM-AI-ASSISTANT | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+
+Coverage rules:
+
+- `qa-check.sh` generates coverage evidence.
+- Coverage must use the real project configuration.
+- Exclusions require documented justification.
+- Coverage percentage alone does not prove contract or integration quality.
+
+## 7. Static analysis summary
+
+| Project | Tool | Project key | Status | Issues | Last execution | Evidence |
+|---|---|---|---|---:|---|---|
+| DP-API | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
+| SBM-API | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
+| SBM-MANAGER | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
+| SBM-DB | N/A | N/A | not validated | N/A | N/A | No static-analysis evidence supplied |
+| SBM-AI-ASSISTANT | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
+
+Rules:
+
+- Quality Gate status must come from actual scanner output.
+- Scanner failure is not equivalent to a failed Quality Gate.
+- Project keys, URLs and credentials must not be invented or exposed.
+
+## 8. Security validation summary
+
+Required transversal checks:
+
+- unauthenticated requests;
+- invalid or expired credentials;
+- authenticated but unauthorized requests;
+- wrong tenant or brand;
+- missing module;
+- insufficient role;
+- object-level restrictions;
+- client versus internal permissions;
+- AI-triggered actions using identical authorization rules;
+- ZIP path traversal;
+- symlinks;
+- absolute paths;
+- unauthorized patch targets;
+- secret leakage.
+
+Current status:
+
+```text
+No suite-wide security validation evidence supplied.
+```
+
+## 9. API validation summary
 
 Required checks:
 
-- frontend calls the canonical API;
-- endpoint path and HTTP method are correct;
-- request payload matches the backend contract;
-- response fields are correctly interpreted;
-- validation errors are displayed;
-- loading and empty states work;
-- permissions are respected;
-- disabled operations are not exposed;
-- frontend does not calculate backend-owned values;
-- frontend does not fabricate identifiers or audit fields;
-- logical deletion behavior is reflected correctly;
-- stale endpoints are removed only after all consumers migrate.
+- canonical API owner;
+- HTTP method and path;
+- request body;
+- response body;
+- status codes;
+- public error contract;
+- authentication;
+- authorization;
+- pagination and filtering;
+- idempotency;
+- compatibility with existing consumers.
 
----
+Any method, path, request body or response contract change must update `SUITE_CONTEXT.md` and corresponding QA records.
 
-## 8. API-to-database QA
-
-Applicable flow:
+Current status:
 
 ```text
-DP-API / SBM-API
-→ PostgreSQL
+No complete transversal API validation evidence supplied.
 ```
 
-Required checks:
+## 10. Database validation summary
 
-- Django or application mapping matches the live table;
-- field names, types, nullability and foreign keys are correct;
-- unmanaged models remain unmanaged when Flyway owns the table;
-- triggers and generated identifiers behave as expected;
-- transactions preserve consistency;
-- logical deletion does not physically remove records;
-- versioning and audit fields update correctly;
-- legacy data remains readable when compatibility is required;
-- tests do not alter shared persistent data;
-- no unauthorized migration is generated or applied.
-
-Mandatory comparison for database-sensitive work:
+Mandatory comparison:
 
 ```text
 current PostgreSQL schema
@@ -202,185 +205,39 @@ current PostgreSQL schema
 ↔ serializer and public contract
 ```
 
----
+Required checks:
 
-## 9. Cross-API QA
+- field names and types;
+- nullability;
+- foreign keys;
+- constraints and indexes;
+- generated identifiers;
+- triggers;
+- transactions;
+- logical deletion;
+- audit and version fields;
+- unmanaged model configuration;
+- absence of unauthorized migrations.
 
-Applicable flow:
+Current status:
 
 ```text
-DP-API
-↔ SBM-API
+No complete transversal database validation evidence supplied.
 ```
 
-Use only when a workflow explicitly requires both APIs.
+## 11. Deployment validation summary
 
 Required checks:
 
-- ownership remains unambiguous;
-- no duplicated write occurs;
-- one API does not bypass the other's validations;
-- authentication context is propagated safely;
-- failures are not silently converted to success;
-- retries do not create duplicate operations;
-- synchronous dependencies have documented timeout and error behavior;
-- circular dependencies are avoided;
-- audit records identify the initiating user and component.
-
----
-
-## 10. AI Tool QA
-
-Applicable flow:
-
-```text
-SBM-AI-ASSISTANT
-→ Tool
-→ DP-API or SBM-API
-```
-
-Required checks:
-
-- intent routes to the correct Tool;
-- Tool calls the canonical API;
-- structured input matches the API contract;
-- identifiers are resolved, not invented;
-- requesting-user identity and tenant context are preserved;
-- permissions match direct API usage;
-- sensitive writes require approval when defined;
-- API validation errors are returned faithfully;
-- rejected operations remain rejected;
-- AI does not access PostgreSQL directly;
-- AI does not reproduce authoritative business calculations;
-- tool name, parameters, result, user and timestamp are observable;
-- repeated requests are idempotent where required.
-
----
-
-## 11. Tenant and brand isolation QA
-
-Every client-facing transversal test must verify isolation.
-
-Required negative case:
-
-```text
-User from Tenant A
-→ attempts to read or modify Tenant B
-→ access denied or resource hidden
-```
-
-Validate isolation in:
-
-- list endpoints;
-- detail endpoints;
-- search;
-- filters;
-- exports;
-- admin;
-- background tasks;
-- AI Tools;
-- logs and audit records;
-- cached or vectorized data when tenant-specific.
-
-Shared lookup data must be explicitly identified as global.
-
----
-
-## 12. Authentication and authorization QA
-
-Required flow:
-
-```text
-identity
-→ tenant/franchise
-→ active modules
-→ role
-→ permission
-→ restriction
-→ requested object
-```
-
-Validate:
-
-- unauthenticated requests;
-- authenticated but unauthorized requests;
-- expired or invalid credentials;
-- wrong tenant;
-- missing module;
-- insufficient role;
-- object-level restrictions;
-- admin versus client permissions;
-- AI-triggered actions using the same authorization rules.
-
-Do not use unrestricted technical credentials as proof that a client workflow works.
-
----
-
-## 13. Business lifecycle QA
-
-For entities with lifecycle behavior, validate:
-
-```text
-create
-→ read
-→ partial update
-→ confirmation
-→ version increment
-→ logical deletion
-```
-
-Required checks:
-
-- server-generated identifiers;
-- immutable fields;
-- confirmation metadata;
-- audit log;
-- effective versus idempotent changes;
-- logical deletion visibility;
-- disabled physical deletion;
-- transaction rollback;
-- concurrent update protection where applicable.
-
----
-
-## 14. Pricing QA
-
-For Product, Material, Service, or other priced entities:
-
-- validate compatible Price Configuration;
-- validate exact decimal handling;
-- validate derived amounts;
-- validate Price version creation;
-- validate previous current Price transition;
-- validate shared or legacy Price protection;
-- validate idempotent price updates;
-- validate transaction rollback;
-- validate fiscal configuration ownership;
-- validate frontend and AI do not calculate authoritative values independently.
-
----
-
-## 15. Contract compatibility QA
-
-Before retiring or moving an endpoint:
-
-1. identify every consumer;
-2. compare old and new contracts;
-3. validate request compatibility;
-4. validate response compatibility;
-5. validate errors and status codes;
-6. migrate consumers;
-7. run regression tests;
-8. monitor the replacement;
-9. retire the duplicate only after acceptance.
-
-Never remove a duplicate implementation merely because the new endpoint exists.
-
----
-
-## 16. Docker and service QA
-
-Validate the real local topology when the task affects runtime communication.
+- required containers are running;
+- container names and ports do not conflict;
+- internal services resolve through Docker;
+- dependencies become ready;
+- health checks respond;
+- environment variables load from the expected source;
+- failure of one dependency produces a controlled error;
+- rollback and backup behavior work;
+- no secret values appear in logs or generated packages.
 
 Known shared network:
 
@@ -388,274 +245,164 @@ Known shared network:
 sbm-network
 ```
 
-Check:
+Current status:
 
-- required containers are running;
-- container names are unique;
-- host ports do not conflict;
-- internal ports are reachable;
-- DNS names resolve through Docker;
-- environment variables are loaded from the expected file;
-- dependent services are ready;
-- health endpoints respond;
-- logs show no hidden startup failures;
-- stopping one dependency produces a controlled error.
+```text
+No complete transversal deployment validation evidence supplied.
+```
 
-Do not assume current ports or names without checking the corresponding Compose files.
+## 12. Defect classification
 
----
+| Severity | Name | Definition | Release effect |
+|---:|---|---|---|
+| 0 | none | No observed defect | none |
+| 1 | very low | Cosmetic or negligible operational effect | normally non-blocking |
+| 2 | low | Limited non-critical behavior affected | may be accepted |
+| 3 | medium | Relevant feature degradation with workaround | requires explicit decision |
+| 4 | high | Major capability, security or integration failure | blocking |
+| 5 | critical | Data loss, privilege bypass, cross-tenant access or system-wide failure | blocking |
 
-## 17. Database test-data rules
+Every defect must include:
 
-Allowed:
-
-- dedicated test database;
-- transactional rollback;
-- deterministic fixtures;
-- isolated seed data;
-- read-only inspection of shared development data.
-
-Not allowed:
-
-- destructive tests against production;
-- persistent mutation of shared development records;
-- manual cleanup as the normal test strategy;
-- tests depending on unstable existing rows;
-- schema changes from application QA;
-- secrets embedded in fixtures.
-
----
-
-## 18. Failure-path QA
-
-Every transversal workflow must include failure cases.
-
-Examples:
-
-- API unavailable;
-- database unavailable;
-- invalid payload;
-- foreign key missing;
-- unauthorized user;
-- wrong tenant;
-- stale version;
-- duplicate request;
-- timeout;
-- partial dependency failure;
-- AI Tool returns malformed response;
-- frontend receives HTTP 400, 401, 403, 404, 409 or 500.
-
-Expected behavior:
-
-- no silent success;
-- no partial inconsistent write;
-- clear error ownership;
-- safe rollback;
-- useful logs;
-- stable public error contract.
-
----
-
-## 19. Observability QA
-
-For transversal workflows, validate that the failing component can be identified.
-
-Required information where applicable:
-
-- request or correlation ID;
-- user;
-- tenant;
-- component;
-- endpoint or Tool;
-- action;
-- timestamp;
+- affected project;
+- description;
+- reproduction evidence;
+- severity;
+- owner;
 - status;
-- error category;
-- non-sensitive diagnostic message.
+- accepted workaround if applicable.
 
-Logs must not expose:
+## 13. Risk classification
 
-- passwords;
-- tokens;
-- secrets;
-- unrestricted personal data;
-- database credentials.
+| Risk | Meaning | Expected action |
+|---:|---|---|
+| 0 | none | no action |
+| 1 | very low | monitor |
+| 2 | low | plan correction |
+| 3 | medium | explicit owner and mitigation |
+| 4 | high | block unless accepted |
+| 5 | critical | mandatory block |
 
----
+Risk values must be integers from `0` to `5`.
 
-## 20. QA execution stages
+## 14. Release criteria
 
-### 20.1 Development stage
-
-Allowed:
-
-- focused unit tests;
-- focused domain tests;
-- targeted integration tests;
-- system checks;
-- import validation;
-- endpoint smoke tests.
-
-Follow local project restrictions.
-
-A project context may explicitly forbid:
-
-```text
-./scripts/qa-check.sh
-```
-
-during development.
-
-### 20.2 Repository acceptance stage
-
-Run the local project's complete QA workflow only after implementation is ready.
-
-Typical checks:
-
-- complete test suite;
-- coverage;
-- static analysis;
-- Django or framework system check;
-- local Quality Gate;
-- project-specific smoke tests.
-
-### 20.3 Transversal acceptance stage
-
-After local acceptance:
-
-- start required repositories;
-- validate the real integration flow;
-- execute cross-project smoke tests;
-- validate permissions and tenant isolation;
-- validate rollback and failure behavior;
-- update global and local contexts.
-
----
-
-## 21. Evidence required
-
-Every completed QA report must include:
-
-```text
-scope
-affected repositories
-tested versions or commit references
-environment
-commands executed
-tests passed and failed
-coverage where applicable
-static-analysis result
-integration scenarios
-failure scenarios
-database mutation statement
-migration statement
-known risks
-final acceptance status
-```
-
-Do not report a test as executed when it was only planned.
-
----
-
-## 22. Acceptance statuses
-
-Use:
+Release statuses:
 
 ```text
 PASS
 → all required criteria validated
 
 PASS WITH ACCEPTED RISK
-→ criteria validated except documented non-blocking risk
+→ required criteria validated except documented non-blocking risks
 
 BLOCKED
-→ required dependency, environment or source unavailable
+→ dependency, environment or source unavailable
 
 FAIL
 → observed behavior violates the accepted contract
 ```
 
-Every accepted risk must include:
+A release requires:
 
-- description;
-- impact;
-- reason for acceptance;
-- owner;
-- future action.
+- applicable project quality gates;
+- transversal integration checks when relevant;
+- security validation;
+- failure-path validation;
+- database impact statement;
+- migration statement;
+- coverage and static-analysis evidence when configured;
+- updated contexts;
+- updated documentation when required;
+- no unaccepted high or critical risk.
 
----
+## 15. Accepted exceptions
 
-## 23. Context update requirements
+| Exception ID | Scope | Description | Risk | Reason | Owner | Expiration | Status |
+|---|---|---|---:|---|---|---|---|
+| N/A | N/A | No accepted QA exceptions currently evidenced | 0 | N/A | N/A | N/A | none |
 
-After transversal QA:
+An exception must never be inferred from missing evidence.
 
-Update the global context when:
+## 16. Current QA status
 
-- ownership changed;
-- a cross-project contract changed;
-- a new integration was validated;
-- a shared QA standard changed;
-- a release risk was accepted;
-- a dependency or runtime topology changed.
-
-Update each local QA context when:
-
-- commands changed;
-- tests changed;
-- coverage changed;
-- SonarQube changed;
-- project-specific acceptance changed.
-
-Update deployment context when:
-
-- environment variables changed;
-- service startup changed;
-- ports or containers changed;
-- release or rollback procedure changed.
-
----
-
-## 24. Stable QA rules
-
-1. Test the canonical owner.
-2. Test public contracts, not accidental implementation details.
-3. Validate integrations after local tests.
-4. Preserve tenant isolation.
-5. Preserve business auditability.
-6. Never bypass APIs for convenience.
-7. Never mutate the production schema from application QA.
-8. Never hide application code from coverage merely to improve metrics.
-9. Never accept silent partial failure.
-10. Never remove a legacy endpoint before consumer migration.
-11. Record exact evidence.
-12. Respect local project QA restrictions.
-13. Keep global and local contexts synchronized.
-14. Create separate QA contexts for new domains after implementation, not before.
-15. Work one validated step at a time.
-
----
-
-## 25. Current direction
-
-Current and upcoming transversal areas include:
+Current suite QA state:
 
 ```text
-Product
-→ DP-API accepted reference
-→ SBM-MANAGER consumer validated
-
-Material
-→ dedicated DP-API app
-→ frontend integration acceptance pending
-
-Service
-→ dedicated DP-API app planned
-→ database source must be validated first
-
-Context RAG
-→ general and project contexts
-→ separate Qdrant collection from Confluence business documents
-→ ingestion owned by SBM-AI-ASSISTANT
+Status: BLOCKED
+Reason: complete project-level test, coverage and SonarQube evidence is not yet supplied.
 ```
 
-Specific QA implementation for Context RAG, Service, Catalog, Ticket, and later domains must be defined in their corresponding project QA contexts after the implementation scope is complete.
+Verified workflow responsibility:
+
+```text
+qa-check.sh
+→ execute tests
+→ generate coverage
+→ execute SonarQube scanner
+→ produce QA evidence
+
+context-deploy.sh
+→ extract and package QA evidence
+
+context-upgrade.sh
+→ update project and global QA contexts
+```
+
+No test, coverage or SonarQube result is marked as completed by this context update.
+
+## 17. Pending QA work
+
+1. Define the complete DP-API QA procedure.
+2. Standardize `qa-check.sh` evidence output.
+3. Define project-specific coverage thresholds.
+4. Define SonarQube project keys and mandatory gates.
+5. Build project test inventories.
+6. Implement global and project QA context synchronization.
+7. Validate section patch import security.
+8. Validate context backup and rollback.
+9. Implement documentation upgrade QA.
+10. Add transversal tenant-isolation tests.
+11. Add frontend-to-API contract tests.
+12. Add AI Tool-to-API authorization tests.
+13. Add API-to-database compatibility tests.
+14. Create QA contexts for remaining projects.
+
+## 18. Related documentation
+
+Relevant documentation domains include:
+
+- QA and Testing;
+- Security and DevSecOps;
+- Development;
+- Roadmap;
+- Observability;
+- DevOps;
+- SBM Suite.
+
+Paths must use:
+
+```text
+SBM-SUITE/context/documentation/<page>/<page>.md
+SBM-SUITE/context/documentation/<page>/subpages/<subpage>.md
+```
+
+Specific paths will be added when the documentation format and tree are finalized.
+
+## 19. Document boundary
+
+This file stores transversal QA policy, summarized project status, test inventory, quality gates, evidence state, risks and release criteria.
+
+It does not replace:
+
+- detailed project test plans;
+- project fixtures;
+- project commands;
+- raw coverage reports;
+- SonarQube reports;
+- deployment instructions;
+- security architecture;
+- database schema definitions;
+- documentation page content.
+
+Detailed evidence remains in each project QA context and generated QA artifacts.

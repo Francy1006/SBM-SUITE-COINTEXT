@@ -1,22 +1,20 @@
 # BUSINESS_CONTEXT.md
 
-> **Last updated:** 2026-07-29
+> **Last updated:** 2026-07-30
 >
 > **Purpose**
 >
-> This document preserves the business context of **SBM Suite**. It explains the commercial purpose of the platform, the role of each business brand, the meaning of the main business entities, and the operational rules that technical projects must respect.
+> Persistent business context for **SBM Suite**. It defines brands, franchises, operational profiles, enabled modules, business domains, entities, rules and commercial boundaries.
 >
-> This file is not a technical architecture document. Technical ownership, containers, APIs, database schemas, deployment, and cross-project integration belong to `SUITE_CONTEXT.md` and the context of each repository.
+> **Accuracy note**
+>
+> Business counts, module status and operational metrics must come from validated evidence or authoritative systems. Unknown values remain `N/A`.
 
----
+## 1. Business overview
 
-## 1. Business vision
+SBM Suite is a configurable ERP platform designed to support multiple businesses, brands, franchises and operational models from a shared technological ecosystem.
 
-SBM Suite is a configurable ERP platform designed to support multiple businesses, brands, franchises, and operational models from a shared technological ecosystem.
-
-Its objective is to let each authorized client operate its business independently while SBM retains control over platform-level services such as provisioning, subscriptions, modules, global configuration, and internal administration.
-
-Core principle:
+Core separation:
 
 ```text
 Client business operation
@@ -26,335 +24,186 @@ Platform or contractual operation
 → internal SBM administration
 ```
 
-The platform must reduce manual dependency on internal SBM personnel for routine client operations without exposing critical platform controls.
+The platform must reduce manual dependence on SBM personnel for routine client operations without exposing critical platform controls.
 
----
+## 2. Product vision
 
-## 2. Business actors
+Provide a multi-brand platform where each authorized business can operate independently while SBM retains control over:
 
-### 2.1 Client user
+- tenant and franchise provisioning;
+- subscriptions and plans;
+- contracted modules;
+- global configuration;
+- internal administration;
+- shared platform services;
+- platform-level audit and support.
 
-A client user belongs to a business or brand operating through SBM Suite.
+## 3. Business actors
 
-Typical responsibilities:
+| Actor | Scope | Main responsibilities | Restrictions |
+|---|---|---|---|
+| Client user | Own brand or tenant | Operate products, materials, services, catalogs, prices, providers, branches, tickets and approved AI workflows | No cross-brand or platform administration |
+| Client administrator | Own brand or tenant | Manage permitted users, roles, modules and operational configuration | Cannot provision tenants, franchises or uncontracted modules |
+| Internal SBM user | Platform | Provision clients, franchises, subscriptions, modules and global services | Must remain within internal authority |
+| AI-assisted user | Inherited user scope | Perform approved operations through Tools and responsible APIs | AI gains no independent authority |
 
-- create and maintain products;
-- manage materials and services;
-- configure catalogs;
-- manage prices;
-- manage providers;
-- manage branches;
-- create operational tickets;
-- manage permitted users, roles, and restrictions;
-- use approved AI-assisted workflows.
-
-A client user must operate only within the scope of their business, franchise, contracted modules, role, and permissions.
-
-### 2.2 Client administrator
-
-A client administrator has broader permissions inside their own business scope.
-
-Typical responsibilities:
-
-- manage operational users;
-- assign roles;
-- configure permitted modules;
-- manage catalogs, branches, products, materials and services;
-- review operational records.
-
-A client administrator cannot:
-
-- create a new tenant;
-- create a new franchise;
-- activate uncontracted modules;
-- modify another client's data;
-- manage global platform configuration.
-
-### 2.3 Internal SBM user
-
-An internal SBM user belongs to the organization operating SBM Suite.
-
-Typical responsibilities:
-
-- create and provision clients or franchises;
-- activate contracted modules;
-- manage subscriptions and plans;
-- configure global services;
-- administer internal platform users;
-- perform internal operational support;
-- manage platform-level incidents and auditing.
-
-### 2.4 AI-assisted user
-
-An AI-assisted user is a client or internal user who performs an operation through an approved AI channel.
-
-The AI does not gain independent authority. It acts using:
+Authorization target:
 
 ```text
 requesting user
-→ tenant context
+→ tenant or franchise
+→ active modules
 → role
-→ permissions
-→ approved Tool
-→ responsible API
+→ permission
+→ restriction
+→ approved business action
 ```
 
----
+## 4. Brands and franchises
 
-## 3. Business brands and tenants
+| Brand ID | Brand | Franchise | Description | Status | Source |
+|---|---|---:|---|---|---|
+| SBM | SBM | 0 | Platform owner, internal services and shared infrastructure | active | Suite context |
+| DITALY-PASTA | Ditaly Pasta | 1 | Initial validated food-service business operating on SBM Suite | active | Current business context |
 
-SBM Suite is designed to support multiple brands or business units.
+Rules:
 
-Current validated brand:
+- `Franchise` uses `1 = true`, `0 = false`.
+- Every brand operates within isolated business and authorization boundaries.
+- A shared physical schema does not authorize cross-brand access.
+- New brands or franchise changes require updating this context and related documentation.
 
-```text
-Ditaly Pasta
-```
+## 5. Brand operational profile
 
-Each brand may have its own:
+| Brand | Locales enabled | Local count | Client count | Product count | Ticket count | Stock tracked | Last updated | Source |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| SBM | 0 | N/A | N/A | N/A | N/A | 0 | 2026-07-30 | Context definition |
+| Ditaly Pasta | 1 | N/A | N/A | N/A | N/A | N/A | 2026-07-30 | Authoritative endpoint pending |
 
-- products;
-- materials;
-- services;
-- catalogs;
-- price configurations;
-- providers;
-- branches;
-- agreements;
-- tickets;
-- users;
-- operational rules.
+Rules:
 
-Brand-specific data and operations must remain isolated from other brands.
+- Boolean values use `1 = true`, `0 = false`.
+- Unknown counts use `N/A`.
+- Future endpoint-driven values must include source and update timestamp.
+- Counts must never be inferred from code, filenames or incomplete database evidence.
 
-The platform may share global references, but shared physical data does not authorize cross-brand access.
+## 6. Enabled modules by brand
 
----
+| Brand | Module | Enabled | Description | Effective date | Source |
+|---|---|---:|---|---|---|
+| Ditaly Pasta | Product | 1 | Sellable item management | N/A | Current validated domain |
+| Ditaly Pasta | Material | 1 | Ingredient and operational input management | N/A | Current validated domain |
+| Ditaly Pasta | Service | 1 | Non-physical business offering management | N/A | Current validated direction |
+| Ditaly Pasta | Catalog | 1 | Grouping and publication of offerings | N/A | Current validated direction |
+| Ditaly Pasta | Ticket | 1 | Client-facing operational and support requests | N/A | Current validated direction |
+| Ditaly Pasta | Pricing | 1 | Price, tax and fiscal configuration | N/A | Current validated domain |
+| Ditaly Pasta | Provider | 1 | Provider and related business information | N/A | Current validated domain |
+| Ditaly Pasta | Branch | 1 | Physical or operational locations | N/A | Current validated domain |
+| Ditaly Pasta | Agreement | 1 | Commercial relationship configuration | N/A | Current validated domain |
 
-## 4. Ditaly Pasta
+Rules:
 
-Ditaly Pasta is the first validated client business inside SBM Suite.
+- A module change updates this context when business capability changes.
+- A technical implementation change alone does not change module status.
+- Module activation remains platform-controlled when contractually applicable.
 
-Its operational model includes:
+## 7. Core business domains
 
-- food products;
-- ingredients and materials;
-- commercial or operational services;
-- product and service catalogs;
-- price and fiscal configuration;
-- providers;
-- branches;
-- commercial agreements;
-- users and permissions;
-- support or operational tickets.
-
-The main client-facing interaction is:
-
-```text
-Ditaly Pasta user
-→ SBM Manager
-→ DP-API
-→ validated Ditaly Pasta operation
-```
-
----
-
-## 5. Main business capabilities
-
-### 5.1 Product
-
-A Product is a sellable item offered by the business.
-
-Examples:
-
-- prepared food;
-- packaged product;
-- menu item;
-- commercial item associated with a price.
-
-A Product may include:
-
-- generated business code or SKU;
-- name and description;
-- category;
-- type;
-- group;
-- provider;
-- package;
-- current price;
-- confirmation state;
-- audit information;
-- logical deletion state;
-- entity version.
-
-Business rules:
-
-- Product belongs to the client-facing business domain.
-- Product identifiers generated by the platform are not invented by the client.
-- Product price changes preserve history through Price versioning.
-- Product deletion is logical when required by the accepted contract.
-- Product changes must remain auditable.
-
-Canonical ownership:
+Canonical client-facing domains:
 
 ```text
 Product
-→ products app
-```
-
-### 5.2 Material
-
-A Material is an input used in production, preparation, packaging, or operational processes.
-
-Examples:
-
-- ingredients;
-- packaging inputs;
-- consumables;
-- production supplies.
-
-A Material may include:
-
-- generated code or SKU;
-- description;
-- provider;
-- unit of measure;
-- package;
-- current price;
-- confirmation state;
-- audit information;
-- logical deletion state;
-- entity version.
-
-Business rules:
-
-- Material is independent from Product.
-- Material has its own lifecycle and pricing behavior.
-- Product and Material must not be merged merely because they share fields.
-- Legacy Material records must not be silently deleted or hidden.
-- Material operations must preserve auditability.
-
-Canonical ownership:
-
-```text
 Material
-→ material app
-```
-
-### 5.3 Service
-
-A Service is a non-physical business offering or operational activity delivered to a client.
-
-Possible examples:
-
-- delivery;
-- installation;
-- preparation service;
-- maintenance;
-- consulting;
-- support;
-- operational fee;
-- additional commercial service.
-
-A Service may include:
-
-- business code;
-- name and description;
-- provider;
-- category or type;
-- price;
-- availability;
-- fulfillment rules;
-- confirmation state;
-- audit information;
-- logical deletion state;
-- entity version.
-
-Business rules:
-
-- Service is independent from Product and Material.
-- Its definitive fields and relationships must be validated against the current database.
-- Service must not inherit Product or Material rules automatically.
-- Pricing, availability, fulfillment and lifecycle rules must be explicit.
-
-Canonical ownership:
-
-```text
 Service
-→ service app
-```
-
-### 5.4 Catalog
-
-A Catalog organizes and publishes business offerings.
-
-It may include:
-
-- products;
-- materials when commercially applicable;
-- services;
-- menus;
-- item groups;
-- categories;
-- visibility rules;
-- publication state;
-- branch or channel conditions.
-
-Business rules:
-
-- Catalog determines how offerings are grouped and presented.
-- Catalog visibility may depend on branch, channel, franchise, status, or configuration.
-- Catalog does not own Product, Material, or Service lifecycle rules.
-- Catalog references other business entities through explicit relationships.
-
-Canonical ownership:
-
-```text
 Catalog
-→ catalog app
+Ticket
+Price
+Provider
+Branch
+Agreement
+User and authorization
 ```
 
-### 5.5 Ticket
-
-A Ticket represents a client-facing operational or support request.
-
-Examples:
-
-- support request;
-- incident;
-- operational problem;
-- configuration request;
-- follow-up item.
-
-A Ticket may include:
-
-- title;
-- description;
-- priority;
-- status;
-- requester;
-- assignment;
-- timestamps;
-- audit information;
-- SLA-related information.
-
-Business rules:
-
-- Ticket creation begins in the client-facing domain.
-- Internal escalation may later interact with SBM internal processes.
-- Ticket lifecycle, priority, assignment and resolution must be auditable.
-- Tickets must not expose internal platform information to unauthorized users.
-
-Canonical ownership:
+Canonical ownership currently defined:
 
 ```text
-Ticket
-→ ticket app
+Product  → products app
+Material → material app
+Service  → service app
+Catalog  → catalog app
+Ticket   → ticket app
 ```
 
-### 5.6 Price
+Each domain remains independent even when models share common fields.
 
-A Price represents the monetary state associated with a Product, Material, Service, or another priced business record.
+## 8. Business entities
+
+| Entity | Description | Client-facing owner | Platform/internal owner | Main lifecycle |
+|---|---|---|---|---|
+| Product | Sellable business item | DP-API | Internal support only when explicitly required | create, confirm, update, version, soft-delete |
+| Material | Input used in production, packaging or operations | DP-API | Internal support only when explicitly required | create, confirm, update, version, soft-delete |
+| Service | Non-physical commercial or operational offering | DP-API | Internal support only when explicitly required | create, confirm, update, version, soft-delete |
+| Catalog | Grouping and publication of offerings | DP-API | Global policy only when explicitly platform-owned | create, configure, publish, deactivate |
+| Ticket | Client-facing operational or support request | DP-API | Internal escalation or support workflow | create, assign, progress, resolve |
+| Price | Monetary state of a priced business record | DP-API | Global fiscal policy where applicable | create version, activate current, preserve history |
+| Provider | Supplier of products, materials or services | DP-API | Shared references where applicable | create, update, deactivate |
+| Branch | Physical or operational business location | DP-API | Tenant provisioning remains internal | create, configure, activate, deactivate |
+| Agreement | Commercial relationship and applicable conditions | DP-API | Contractual policy where applicable | create, activate, expire |
+| Franchise | Contractual business unit | Not client-controlled | SBM-API | provision, configure, activate, deactivate |
+| Tenant | Isolated operational business scope | Not client-controlled | SBM-API | provision, configure, activate, deactivate |
+
+## 9. Business rules
+
+1. Client users operate only within their tenant or brand.
+2. Routine client operations should not require internal SBM intervention.
+3. Product, Material, Service, Catalog and Ticket remain separate capabilities.
+4. Similar fields do not justify merging domains.
+5. Each business capability has one canonical owner.
+6. Price calculations and versioning remain backend responsibilities.
+7. Audit and confirmation metadata are server-controlled.
+8. AI actions use the same permissions as direct user actions.
+9. Frontends do not reproduce authoritative backend rules.
+10. Platform provisioning remains internal.
+11. Physical schema location does not determine business ownership.
+12. Legacy data must not be silently deleted or hidden.
+13. Business changes must remain traceable.
+14. Cross-brand access is prohibited unless explicitly designed.
+15. Business capability changes must update this context and related documentation.
+
+## 10. Commercial flows
+
+Client operation:
+
+```text
+Client user
+→ SBM Manager or approved channel
+→ DP-API
+→ validated business operation
+→ persisted business state
+```
+
+Internal platform operation:
+
+```text
+Internal SBM user
+→ SBM Manager or internal channel
+→ SBM-API
+→ provisioning, subscription or global configuration
+```
+
+AI-assisted operation:
+
+```text
+Authorized user
+→ SBM AI Assistant
+→ explicit Tool
+→ responsible API
+→ validated result
+```
+
+The AI must not invent business identifiers, bypass validation or exceed the requesting user's authority.
+
+## 11. Pricing and fiscal concepts
 
 A Price may include:
 
@@ -371,426 +220,169 @@ A Price may include:
 - confirmation state;
 - audit information.
 
-Business rules:
+Rules:
 
-- Price changes may create a new version instead of overwriting history.
-- Only one current price should be active for the same owned record according to the applicable rule.
-- Pricing calculations belong to the responsible backend.
-- Frontends and AI assistants must not reproduce or bypass fiscal calculations.
-- Shared or inconsistent legacy Prices must be handled safely.
+- pricing calculations are authoritative in the backend;
+- formula evaluation must be deterministic;
+- monetary values use exact decimal handling;
+- price history must remain auditable;
+- only compatible and confirmed configurations are accepted;
+- frontends and AI assistants must not reproduce fiscal logic.
 
-### 5.7 Provider
-
-A Provider supplies products, materials, services, banking information, logistics, or other business resources.
-
-A Provider may include:
-
-- code;
-- name;
-- classification;
-- contact information;
-- geographic information;
-- banking information;
-- dispatch information;
-- confirmation and audit state.
-
-Business rules:
-
-- Providers are managed by authorized client users.
-- Provider changes must preserve referential integrity.
-- Provider information may be reused by Products, Materials, and Services.
-- A shared provider does not merge the ownership of those domains.
-
-### 5.8 Branch
-
-A Branch is a physical or operational location of the client business.
-
-A Branch may include:
-
-- branch type;
-- address;
-- geographic location;
-- platform integrations;
-- agreements;
-- operational configuration;
-- active state.
-
-Business rules:
-
-- Branch data belongs to the client business.
-- Branch access must remain tenant-scoped.
-- Platform or agreement configuration may vary by branch.
-- A branch may have different catalogs, prices, channels, or external platforms.
-
-### 5.9 Agreement
-
-An Agreement represents a commercial relationship between the business and another organization.
-
-Examples:
-
-- corporate agreements;
-- benefit agreements;
-- discount agreements;
-- platform-specific commercial conditions.
-
-An Agreement may include:
-
-- participating company;
-- branch applicability;
-- discount or commercial rule;
-- validity period;
-- active state;
-- configuration details.
-
-### 5.10 User, role, permission and restriction
-
-A business user represents a person authorized to operate within a client scope.
-
-A Role groups permissions.
-
-A Permission authorizes a capability.
-
-A Restriction limits where or how that capability may be exercised.
-
-Target evaluation:
+Expected history flow:
 
 ```text
-user
-→ tenant
-→ active modules
-→ role
-→ permission
-→ restriction
-→ requested business action
-```
-
----
-
-## 6. Commercial and fiscal concepts
-
-### 6.1 Price configuration
-
-A Price Configuration determines how a Price is calculated and which record type it applies to.
-
-Examples:
-
-- Product with normal VAT;
-- Material with normal VAT;
-- Service with a specific tax rule.
-
-A configuration may include:
-
-- record type;
-- tax variables;
-- formula;
-- confirmation state;
-- effective business label.
-
-Only compatible and confirmed configurations should be accepted for a business record.
-
-### 6.2 Tax and fiscal directives
-
-Fiscal directives represent tax rules applied to commercial values.
-
-Possible concepts:
-
-- VAT;
-- additional tax;
-- retention;
-- fiscal formula;
-- fiscal configuration;
-- jurisdiction-specific rules.
-
-Business rules:
-
-- Fiscal calculations are authoritative in the backend.
-- Formula evaluation must be deterministic.
-- Monetary values must use exact decimal handling.
-- A Price must preserve the components required for auditing.
-- Regulatory changes must be implemented through controlled configuration and database changes.
-
-### 6.3 Price history
-
-Price history is required to preserve commercial traceability.
-
-Expected behavior:
-
-```text
-current Price
+current price
 → business value changes
-→ create new Price version
-→ link business record to new Price
-→ previous owned Price becomes non-current
+→ create new price version
+→ link business record to new price
+→ previous owned price becomes non-current
 ```
 
-Shared or legacy inconsistent Prices require explicit compatibility handling.
+## 12. Inventory and catalog concepts
 
----
+Inventory concepts may include:
 
-## 7. Operational lifecycle concepts
+- stock;
+- availability;
+- material consumption;
+- package and unit of measure;
+- branch-specific availability;
+- provider and dispatch data.
 
-Business entities may support:
+Catalog concepts may include:
+
+- products;
+- services;
+- materials when commercially applicable;
+- menus;
+- groups;
+- categories;
+- visibility rules;
+- publication state;
+- branch or channel conditions.
+
+Rules:
+
+- Catalog does not own Product, Material or Service lifecycle.
+- Stock values must come from authoritative operational sources.
+- Catalog visibility may depend on branch, channel, franchise, state or configuration.
+
+## 13. Sales and order concepts
+
+Sales and order capabilities may include:
+
+- priced items;
+- catalogs;
+- branch availability;
+- agreements;
+- discounts;
+- fiscal configuration;
+- tickets or support related to an order.
+
+No complete sales or order workflow is considered validated unless explicitly evidenced by the responsible project and database contexts.
+
+## 14. Provider and branch concepts
+
+Provider rules:
+
+- providers are managed by authorized client users;
+- provider changes preserve referential integrity;
+- providers may be referenced by Products, Materials and Services;
+- shared provider data does not merge domain ownership.
+
+Branch rules:
+
+- branch data belongs to the client business;
+- branch access remains tenant-scoped;
+- catalogs, prices, channels and integrations may vary by branch;
+- platform provisioning remains internal.
+
+## 15. Documentation references
+
+Relevant documentation must use repository-relative paths under:
 
 ```text
-creation
-→ confirmation
-→ partial update
-→ version increment
-→ logical deletion
+SBM-SUITE/context/documentation/
 ```
 
-### 7.1 Confirmation
-
-Confirmation indicates that a record has been reviewed or accepted according to the domain workflow.
-
-Confirmation audit should identify:
-
-- confirmation state;
-- timestamp;
-- responsible user.
-
-Clients must not falsify server-controlled confirmation metadata.
-
-### 7.2 Audit
-
-Relevant writes must preserve:
-
-- action;
-- changed fields;
-- user;
-- timestamp;
-- previous or resulting state when required.
-
-Audit fields must not be fabricated by frontends or AI channels.
-
-### 7.3 Entity version
-
-Entity version distinguishes meaningful updates.
-
-Expected rule:
-
-- creation starts at the accepted initial version;
-- effective updates increment once;
-- idempotent requests do not increment;
-- concurrency-sensitive changes must avoid lost updates.
-
-### 7.4 Logical deletion
-
-Logical deletion preserves the physical record while removing it from normal operations.
-
-Expected concepts:
-
-- active state;
-- deleted state;
-- deletion timestamp;
-- responsible user;
-- audit log.
-
-Physical deletion must be explicitly authorized by the domain.
-
----
-
-## 8. Client self-service
-
-Authorized client users should be able to perform routine operations without internal SBM assistance.
-
-Examples:
-
-- create Product;
-- create Material;
-- create Service;
-- manage Catalog;
-- change permitted prices;
-- add Provider;
-- configure Branch;
-- create Ticket;
-- manage operational users and roles.
-
-Client self-service does not include:
-
-- creating tenants;
-- creating franchises;
-- activating uncontracted modules;
-- changing the commercial plan;
-- modifying another brand;
-- provisioning schemas;
-- changing global platform settings.
-
----
-
-## 9. Platform-controlled capabilities
-
-The following concepts remain controlled by SBM:
-
-- franchise creation;
-- tenant provisioning;
-- contracted modules;
-- subscription state;
-- plan management;
-- global configuration;
-- platform-level users;
-- shared internal services;
-- internal operational controls;
-- global audit and support processes.
-
-A client request may initiate a process, but the platform remains authoritative for contractual or provisioning decisions.
-
----
-
-## 10. Multi-brand isolation
-
-Every business operation must resolve the correct brand or tenant.
-
-Required guarantee:
-
-```text
-user from Brand A
-X→ data from Brand B
-```
-
-Isolation applies to:
-
-- reads;
-- writes;
-- searches;
-- exports;
-- AI Tool calls;
-- administration;
-- background workflows;
-- audit logs.
-
-Shared lookup data may be visible across brands only when explicitly designed as global reference data.
-
----
-
-## 11. Frontend business role
-
-SBM Manager is the main enterprise user interface.
-
-It should:
-
-- present domain data;
-- collect user input;
-- call the responsible API;
-- display validation errors;
-- respect permissions;
-- avoid duplicating backend calculations;
-- avoid inventing business identifiers;
-- preserve API ownership boundaries.
-
-The frontend may guide users, but backend APIs remain authoritative.
-
----
-
-## 12. AI-assisted business role
-
-SBM AI Assistant helps users interact with SBM Suite through natural language.
-
-Examples:
-
-```text
-“Show the current price of Product X”
-→ read-only Product/Price Tool
-```
-
-```text
-“Create a new Product”
-→ structured inputs
-→ validation
-→ approval when required
-→ Product Tool
-```
-
-Business rules:
-
-- AI uses explicit Tools.
-- AI cannot bypass APIs.
-- AI cannot invent values required from the database.
-- AI cannot execute actions outside the requesting user's permissions.
-- Sensitive writes may require human approval.
-- Tool activity must remain auditable.
-
----
-
-## 13. Business ownership matrix
-
-| Capability | Client-facing owner | Platform/internal owner |
-|---|---|---|
-| Product | DP-API | SBM-API only for internal platform needs |
-| Material | DP-API | SBM-API only for internal platform needs |
-| Service | DP-API | SBM-API only for internal platform needs |
-| Catalog | DP-API | Global catalog policy only when explicitly platform-owned |
-| Ticket | DP-API | Internal escalation or support workflow |
-| Price | DP-API for client commercial operations | Global fiscal/platform policy when applicable |
-| Provider | DP-API | Shared global references when applicable |
-| Branch | DP-API | Tenant provisioning remains internal |
-| Agreement | DP-API | Contractual platform rules when applicable |
-| Franchise | Not client-controlled | SBM-API |
-| Tenant provisioning | Not client-controlled | SBM-API |
-| Module activation | Not client-controlled | SBM-API |
-| Subscription | Not client-controlled | SBM-API |
-
----
-
-## 14. Stable business rules
-
-1. Client users operate only within their tenant or brand.
-2. Routine client operations must not require internal SBM intervention.
-3. Product, Material, Service, Catalog, and Ticket are separate business capabilities.
-4. Similar fields do not justify merging domains.
-5. Each business capability has one canonical application owner.
-6. Price calculations and versioning remain backend responsibilities.
-7. Audit and confirmation metadata are server-controlled.
-8. AI actions use the same permissions as direct user actions.
-9. Frontends do not reproduce authoritative backend rules.
-10. Platform provisioning remains internal.
-11. Physical schema location does not determine business ownership.
-12. Legacy data must not be silently deleted or hidden.
-13. Business changes must remain traceable.
-14. Cross-brand access is prohibited unless explicitly designed.
-15. New business rules must be reflected in this context when they affect multiple projects.
-
----
-
-## 15. Context update rule
-
-Update `BUSINESS_CONTEXT.md` when a change affects:
-
-- the meaning of a business entity;
-- ownership of a business capability;
-- a client or internal user responsibility;
-- brand or tenant behavior;
-- a business workflow crossing multiple projects;
-- pricing or fiscal meaning;
-- lifecycle, confirmation, audit, or deletion rules;
-- AI-assisted business behavior;
-- platform versus client boundaries.
-
-Do not place implementation details, file paths, container commands, or code-level history here unless required to explain a business rule.
-
-Technical details belong to:
-
-```text
-SBM-SUITE/context/SUITE_CONTEXT.md
-<project>/context/PROJECT_CONTEXT.md
-<project>/context/QA_CONTEXT.md
-<project>/context/DEPLOY_CONTEXT.md
-```
-
----
-
-## 16. Current business direction
-
-Current validated direction:
-
-```text
-Product  → client-facing Product capability
-Material → client-facing Material capability
-Service  → client-facing Service capability
-Catalog  → client-facing publication and grouping capability
-Ticket   → client-facing operational request capability
-```
-
-Ditaly Pasta is the initial validated business.
-
-Future brands may reuse the platform, but their business rules, catalogs, prices, providers, branches, services, and permissions must remain configurable and isolated.
+Business-related documentation domains include:
+
+- SBM Suite;
+- Roadmap;
+- Development;
+- Technologies;
+- Business modules;
+- Brands and franchises;
+- Security and DevSecOps;
+- QA and Testing.
+
+Specific page and subpage paths must be added when the documentation tree format is finalized.
+
+## 16. Terminology
+
+| Term | Meaning |
+|---|---|
+| Brand | Business identity operating on SBM Suite |
+| Franchise | Contractual business unit provisioned by SBM |
+| Tenant | Isolated operational scope for a client |
+| Module | Enabled business capability |
+| Client user | User operating within one authorized business scope |
+| Internal SBM user | User managing platform-level operations |
+| Product | Sellable business item |
+| Material | Input used in production or operations |
+| Service | Non-physical business offering |
+| Catalog | Published grouping of offerings |
+| Ticket | Operational or support request |
+| Price | Monetary state and history of a priced record |
+| Branch | Physical or operational location |
+| Agreement | Commercial relationship and applicable conditions |
+
+## 17. Validated business decisions
+
+| Decision | Status | Business effect | Source |
+|---|---|---|---|
+| Client operations belong to DP-API | accepted | Routine business operations remain client-facing | Current architecture |
+| Platform provisioning belongs to SBM-API | accepted | Tenants, franchises and contracted modules remain internal | Current architecture |
+| Product, Material, Service, Catalog and Ticket remain separate domains | accepted | Independent lifecycle and ownership | Current business direction |
+| Ditaly Pasta is the initial validated business | accepted | First configured brand and operational model | Existing context |
+| Git is the current source of truth for business context and documentation | accepted | Changes are versioned before future API synchronization | Current workflow |
+
+## 18. Business constraints
+
+- Business metrics are not yet populated from an authoritative endpoint.
+- Multi-brand isolation must be enforced explicitly.
+- Legacy data may contain inconsistencies.
+- Service fields and relationships still require database validation.
+- Contracted-module state remains platform-controlled.
+- Documentation synchronization is manual in the first stage.
+- Unknown operational counts remain `N/A`.
+
+## 19. Pending business definitions
+
+- authoritative endpoint for brand operational metrics;
+- exact local, client, product, ticket and stock counts;
+- definitive Service fields and relationships;
+- complete sales and order workflows;
+- formal module activation rules per brand;
+- future brands and franchise profiles;
+- automated Git-to-Notion synchronization;
+- bidirectional conflict management between Git and Notion.
+
+## 20. Document boundary
+
+This file stores business meaning, brands, franchises, capabilities, entities, rules and operational profiles.
+
+It does not define:
+
+- technical architecture;
+- endpoint implementation details;
+- container topology;
+- source code structure;
+- QA execution results;
+- deployment procedures;
+- security control implementation;
+- data schema ownership;
+- documentation page content.
+
+Those concerns belong to their corresponding Suite, Project, QA, Security, Data, Deploy and Documentation contexts.

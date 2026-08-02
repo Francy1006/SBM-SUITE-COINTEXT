@@ -52,9 +52,9 @@ SBM-SUITE/context
 
 | ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---|---:|---|---|---|
-| OBJ-CTX-001 | SBM-SUITE | Validate and stabilize the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/AI Architect Roadmap/`, `context/documentation/SBM-Suite/` |
+| OBJ-CTX-001 | SBM-SUITE | Implement the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/AI Architect Roadmap/`, `context/documentation/SBM-Suite/` |
 | OBJ-DOC-001 | SBM-SUITE | Implement the manual documentation deploy and upgrade workflow with dedicated RAG and Qdrant collection | pending | 4 |  | FEATURE-adds-documentation-workflow | `context/documentation/AI Architect Roadmap/`, `context/documentation/Roadmap/`, `context/documentation/SBM-Suite/` |
-| OBJ-QA-001 | DP-API | Define and implement the complete QA procedure and synchronized project and global QA contexts | active | 5 |  | FEATURE-implements-qa-procedure | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
+| OBJ-QA-001 | DP-API | Implement the complete QA procedure and synchronized project and global QA contexts | pending | 5 |  | FEATURE-implements-qa-procedure-context | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
 
 Rules:
 
@@ -80,7 +80,7 @@ Rules:
 
 | Project | Purpose | Active objective | Pending objectives | Branch | Main context | QA context | Documentation |
 |---|---|---|---|---|---|---|---|
-| DP-API | Client-facing business API | Define and implement the complete QA procedure | Dedicated Service app; Material consumer migration; duplicate Product endpoint retirement | `FEATURE-implements-qa-procedure` | `DP-API/context/PROJECT_CONTEXT.md` | `DP-API/context/QA_CONTEXT.md` | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
+| DP-API | Client-facing business API | None currently recorded as active | Complete QA procedure and synchronized QA contexts | `FEATURE-implements-qa-procedure-context` | `DP-API/context/PROJECT_CONTEXT.md` | `DP-API/context/QA_CONTEXT.md` | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
 | SBM-API | Internal platform API | Not defined | Not defined | N/A | `SBM-API/context/PROJECT_CONTEXT.md` | `SBM-API/context/QA_CONTEXT.md` | To be mapped |
 | SBM-DB | Database source of truth | Not defined | Not defined | N/A | `SBM-DB/context/PROJECT_CONTEXT.md` | `SBM-DB/context/QA_CONTEXT.md` | To be mapped |
 | SBM-MANAGER | Enterprise frontend | Not defined | Not defined | N/A | `SBM-MANAGER/context/PROJECT_CONTEXT.md` | `SBM-MANAGER/context/QA_CONTEXT.md` | To be mapped |
@@ -200,12 +200,9 @@ context-deploy.sh
 → clean context/input and context/output
 → execute project-tree.sh
 → collect Git and QA evidence
-→ require project-tree.txt
 → index authorized contexts in sbm_contexts
 → retrieve relevant chunks
 → generate context-package.zip
-→ write context-export-response.json
-→ validate status=completed
 → copy parameterized SYS_PROMPT.md to context/output
 ```
 
@@ -238,9 +235,7 @@ user uploads context-package.zip + SYS_PROMPT.md
 context-upgrade.zip
 → context/input
 → context-upgrade.sh
-→ require exactly one context-upgrade.zip
 → validate manifest, paths, hashes and patch structure
-→ validate response workflow, project, updated files and backup path
 → create timestamped context backup
 → apply authorized section patches atomically
 → print proposed commit message
@@ -306,17 +301,14 @@ Verified current capabilities include:
 - timestamped backup and atomic replacement exist;
 - DP-API context deployment and upgrade scripts exist;
 - user-guided and evidence execution modes are defined.
-- section-level patch output and application exist;
-- project-tree generation and package evidence exist;
-- context deploy stores and validates the export response;
-- context upgrade validates the response and confirms input cleanup;
-- `qa-check.sh` writes execution evidence to `context/qa-results.md`;
 
 Planned or under modification:
 
+- section-level patch output and application;
 - expanded context types;
 - project-to-global synchronization;
 - project QA-to-global QA synchronization;
+- project tree evidence;
 - dedicated documentation workflow;
 - `sbm_documentation` collection;
 - documentation backup and upgrade scripts;
@@ -368,25 +360,27 @@ Planned or under modification:
 - evidence and user-guided execution modes defined;
 - documentation exported to Git under `context/documentation/`;
 - expanded `FORMAT_CONTEXT.md` contract defined.
-- section-level patch validation and application implemented;
-- project-tree generation integrated into context deployment;
-- context export response persistence and completion validation implemented;
-- context upgrade input and response validation strengthened;
-- QA evidence file generation implemented in `qa-check.sh`;
 
 ## 15. Pending work
 
-1. Complete validated project-to-global synchronization coverage.
-2. Execute the DP-API QA procedure and store real test, coverage and SonarQube evidence.
-3. Synchronize the detailed DP-API QA context with the global QA summary after evidence exists.
-4. Create `SECURITY_CONTEXT.md`.
-5. Create `DATA_CONTEXT.md`.
-6. Create `DECISIONS_CONTEXT.md`.
-7. Complete and validate the documentation deploy and upgrade workflow.
-8. Create and validate `sbm_documentation`.
-9. Map all documentation pages to relevant contexts.
-10. Add later Git-to-Notion synchronization.
-11. Add later asynchronous database-flag orchestration.
+1. Migrate global and project contexts to the expanded format.
+2. Implement section patch validation and application.
+3. Add project-to-global project context synchronization.
+4. Enable project and global QA context updates.
+5. Create `SECURITY_CONTEXT.md`.
+6. Create `DATA_CONTEXT.md`.
+7. Create `DECISIONS_CONTEXT.md`.
+8. Add `project-tree.sh` and include `project-tree.txt` in context deployment.
+9. Update context export, retrieval and ZIP services.
+10. Update context upgrade service and tests.
+11. Create documentation format and system prompt.
+12. Implement documentation export, retrieval and upgrade services.
+13. Create `documentation-deploy.sh` and `documentation-upgrade.sh`.
+14. Create `sbm_documentation`.
+15. Create documentation input, output and backup structure.
+16. Map all documentation pages to relevant contexts.
+17. Add later Git-to-Notion synchronization.
+18. Add later asynchronous database-flag orchestration.
 
 ## 16. Required behavior
 

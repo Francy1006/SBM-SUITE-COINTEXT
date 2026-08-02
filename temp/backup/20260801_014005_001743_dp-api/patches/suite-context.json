@@ -1,0 +1,20 @@
+{
+  "target_file": "SBM-SUITE/context/SUITE_CONTEXT.md",
+  "operations": [
+    {
+      "operation": "replace_section",
+      "heading": "## 15. Context and knowledge architecture",
+      "content": "## 15. Context and knowledge architecture\n\nQdrant collections:\n\n| Collection | Owner | Content | Purpose |\n|---|---|---|---|\n| `sbm_docs` | SBM-AI-ASSISTANT | Confluence documentation | Assistant knowledge |\n| `sbm_contexts` | SBM-AI-ASSISTANT | Global and project contexts | Context RAG |\n| `sbm_documentation` | SBM-AI-ASSISTANT | Git documentation pages | Documentation RAG |\n\nRules:\n\n- collections remain separate;\n- vectors are never exported;\n- Git Markdown is the source of truth;\n- Qdrant is a rebuildable semantic index;\n- context packages use selected chunks, evidence and format contracts;\n- documentation packages use documentation chunks and updated contexts;\n- raw complete source files should not be exported when section-level patches are sufficient.\n\nCurrent context evidence includes Git diff, changed files, change summary, QA results, project tree and retrieved Qdrant chunks. Generated upgrades use validated section-level JSON patches rather than complete context replacements.\n"
+    },
+    {
+      "operation": "replace_section",
+      "heading": "## 19. Current suite state",
+      "content": "## 19. Current suite state\n\nCurrent verified direction:\n\n- Product is the accepted DP-API reference vertical.\n- Material is separated into its own domain app.\n- Service is a planned backend domain.\n- Catalog and Ticket remain future domains.\n- Context export and upgrade endpoints exist.\n- Context RAG uses `sbm_contexts`.\n- Context output is being migrated from complete documents to section-level patches.\n- Global Project, Suite, Business and QA contexts exist.\n- Security, Data and Decisions contexts are being introduced.\n- Documentation lifecycle and `sbm_documentation` are planned.\n- `project-tree.txt` is planned as structural evidence for context deployment.\n\nValidated workflow state:\n\n- context deployment generates `project-tree.txt`, persists `context-export-response.json` and requires `status=completed`;\n- context upgrade requires exactly one named ZIP, validates the backend response and confirms input cleanup;\n- `qa-check.sh` creates bounded execution evidence in `context/qa-results.md`;\n- no successful QA execution, coverage value or SonarQube result is supplied in the current package.\n"
+    },
+    {
+      "operation": "replace_section",
+      "heading": "## 20. Context deployment lifecycle",
+      "content": "## 20. Context deployment lifecycle\n\n```text\nqa-check.sh\n→ execute tests and coverage\n→ execute SonarScanner only when tests and coverage succeed\n→ write bounded evidence to context/qa-results.md\n\ncontext-deploy.sh\n→ clean context input and output directories\n→ execute project-tree.sh when present\n→ require project-tree.txt\n→ collect Git and QA evidence\n→ call POST /contexts/export\n→ persist context-export-response.json\n→ require status=completed\n→ generate context-package.zip and parameterized SYS_PROMPT.md\n\nChatGPT\n→ read FORMAT_CONTEXT.md and supplied evidence\n→ generate only authorized section-level JSON patches\n→ generate manifest.json from final ZIP contents\n\ncontext-upgrade.sh\n→ require exactly one context-upgrade.zip\n→ call POST /contexts/upgrade\n→ validate workflow, project_name, updated_files, backup_directory and input_cleaned\n→ confirm the input ZIP was removed only after success\n```\n\nThe backend remains the mandatory validation, backup, atomic replacement and rollback boundary.\n"
+    }
+  ]
+}

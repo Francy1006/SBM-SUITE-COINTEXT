@@ -3,3 +3,15 @@ context/input/*
 
 context/output/*
 !context/output/.gitkeep
+
+
+documentation/input/*
+!documentation/input/.gitkeep
+
+documentation/output/*
+!documentation/output/.gitkeep
+
+
+
+output/context-export-response.json
+

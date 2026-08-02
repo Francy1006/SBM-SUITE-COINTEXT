@@ -11,18 +11,42 @@
 2. Do not rename, merge, split, reorder or remove required sections.
 3. Add content only inside the matching section.
 4. Preserve the metadata block at the beginning of each file.
-5. Preserve Markdown lists, tables, code blocks and path formatting.
+5. Preserve Markdown lists, tables, code blocks and repository-relative paths.
 6. Do not duplicate information across sections.
-7. Do not create unsupported facts, tests, migrations, deployments or decisions.
-8. When evidence is insufficient, keep the existing content unchanged.
-9. A structural change requires an explicit update to this file.
-10. If a complete source file is unavailable, do not generate a replacement.
-11. Protected context files remain read-only unless their workflow explicitly allows modification.
-12. All dates use `YYYY-MM-DD`.
+7. Do not create unsupported facts, tests, migrations, deployments, metrics or decisions.
+8. When evidence is insufficient, keep existing content unchanged.
+9. Structural changes require an explicit update to this file.
+10. All dates use `YYYY-MM-DD`.
+11. Context updates use section-level patches; complete-file replacement is forbidden.
+12. A project `PROJECT_CONTEXT.md` change must update the global `PROJECT_CONTEXT.md`.
+13. A project `QA_CONTEXT.md` change must update the global `QA_CONTEXT.md`.
+14. Git is the primary source of truth during the manual workflow stage.
+15. Objective, implementation, QA, business and documentation state must remain separate.
+16. Context and documentation use separate Qdrant collections.
+17. Context files reference documentation using repository-relative paths.
+18. Completed or discarded objectives are removed from current-objective tables.
+19. Protected files remain read-only unless their workflow explicitly authorizes modification.
+20. Every file must preserve its declared document boundary.
+21. `FORMAT_CONTEXT.md` is the only authority for context and README structure.
+22. The LLM must not infer missing headings, tables, paths, statuses, values or output files.
+23. Every generated patch must be validated before it is included in the output ZIP.
+24. A patch that cannot be proven valid must be omitted and reported in `EXECUTIVE_README.md`.
+25. Input evidence files and protected workflow files are never authorized output files.
+26. `manifest.allowed_files` and `manifest.updated_files` must be derived only from valid files actually permitted in the output ZIP.
+27. The source manifest must never be copied as the output manifest.
+28. Output paths must be exact, repository-relative, unique and free of `..`, absolute paths and symlinks.
+29. Every output file except `manifest.json` requires a SHA-256 hash matching its final ZIP content.
+30. Any global validation failure must prevent context replacement.
 
 ---
 
 ## 2. Global `PROJECT_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/PROJECT_CONTEXT.md
+```
 
 Required structure:
 
@@ -34,43 +58,90 @@ Required structure:
 > Accuracy note
 
 ## 1. Executive summary
-## 2. Current suite objective
-## 3. Projects and ownership
-## 4. Global architecture
-## 5. Shared infrastructure
-## 6. Cross-project integrations
-## 7. Context deployment and upgrade workflow
-## 8. Current implementation status
-## 9. Validated decisions
-## 10. Accepted risks and constraints
-## 11. Completed work
-## 12. Pending work
-## 13. Required behavior
-## 14. Historical decisions
-## 15. Document boundary
+## 2. Suite purpose
+## 3. Current objectives
+## 4. Projects and ownership
+## 5. Project objective summaries
+## 6. Global architecture
+## 7. Shared infrastructure
+## 8. Cross-project integrations
+## 9. Context deployment and upgrade workflow
+## 10. Documentation deployment and upgrade workflow
+## 11. Current implementation status
+## 12. Validated decisions
+## 13. Accepted risks and constraints
+## 14. Completed work
+## 15. Pending work
+## 16. Required behavior
+## 17. Historical decisions
+## 18. Related documentation
+## 19. Document boundary
 ```
 
-Section rules:
+Required table in `## 3. Current objectives`:
 
-- `Executive summary`: concise suite state.
-- `Current suite objective`: active global objective only.
-- `Projects and ownership`: project responsibilities and boundaries.
-- `Global architecture`: suite-level architecture only.
-- `Shared infrastructure`: shared databases, networks, containers and services.
-- `Cross-project integrations`: contracts and data flows between projects.
-- `Context deployment and upgrade workflow`: context lifecycle.
-- `Current implementation status`: current verified state.
-- `Validated decisions`: accepted architectural and product decisions.
-- `Accepted risks and constraints`: known limitations.
-- `Completed work`: completed suite-level milestones.
-- `Pending work`: transversal pending work.
-- `Required behavior`: mandatory operating rules.
-- `Historical decisions`: relevant superseded or historical decisions.
-- `Document boundary`: information intentionally excluded.
+```text
+| ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
+|---|---|---|---|---:|---|---|---|
+```
+
+Required table in `## 5. Project objective summaries`:
+
+```text
+| Project | Purpose | Active objective | Pending objectives | Branch | Main context | QA context | Documentation |
+|---|---|---|---|---|---|---|---|
+```
+
+Objective rules:
+
+- `Status`: `active` or `pending`.
+- `Priority`: integer from `0` to `5`.
+- `Target date`: optional, format `YYYY-MM-DD`.
+- `Branch`: mandatory before development begins.
+- Multiple objectives are allowed.
+- Every project objective change must update this global file.
+- The global file stores only high-level project summaries.
+- Detailed objectives remain in the project context.
+- This context is the source for roadmap, backlog, epics and issues.
+
+Branch nomenclature:
+
+```text
+<TYPE>-<slug>
+```
+
+Allowed types:
+
+```text
+FEATURE
+BUGFIX
+HOTFIX
+```
+
+Slug rules:
+
+- maximum four words;
+- lowercase;
+- hyphen-separated;
+- no spaces, accents or special characters.
+
+Valid examples:
+
+```text
+FEATURE-implements-qa-procedure-context
+BUGFIX-fixes-product-price-serializer
+HOTFIX-restores-auth-token-validation
+```
 
 ---
 
 ## 3. Global `SUITE_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/SUITE_CONTEXT.md
+```
 
 Required structure:
 
@@ -83,34 +154,68 @@ Required structure:
 
 ## 1. Suite identity
 ## 2. Product scope
-## 3. Project map
-## 4. Ownership boundaries
-## 5. Runtime architecture
-## 6. Data architecture
-## 7. API boundaries
-## 8. Authentication and authorization
-## 9. Integrations
-## 10. Infrastructure and containers
-## 11. Shared configuration
-## 12. Context and knowledge architecture
-## 13. Deployment model
-## 14. Security rules
-## 15. Operational constraints
-## 16. Current suite state
-## 17. Context deployment lifecycle
-## 18. Document boundary
+## 3. Brands and platforms
+## 4. Project map
+## 5. Applications and services
+## 6. Technology inventory
+## 7. Runtime architecture
+## 8. Data architecture
+## 9. API inventory
+## 10. Endpoint contracts
+## 11. Authentication and authorization
+## 12. Integrations and data flows
+## 13. Infrastructure and containers
+## 14. Shared configuration
+## 15. Context and knowledge architecture
+## 16. Deployment model
+## 17. Security rules
+## 18. Operational constraints
+## 19. Current suite state
+## 20. Context deployment lifecycle
+## 21. Documentation lifecycle
+## 22. Related documentation
+## 23. Document boundary
 ```
 
-Section rules:
+Required tables:
 
-- Describe only suite-wide behavior.
-- Do not include project implementation transcripts.
-- Do not duplicate complete project contexts.
-- Record ownership, boundaries and shared flows.
+```text
+| Brand | Project | Application or service | Type | Description | Language | Framework | Version | Runtime | Owner |
+|---|---|---|---|---|---|---|---|---|---|
+```
+
+```text
+| Brand | Project | Category | Technology | Version | Purpose | Status |
+|---|---|---|---|---|---|---|
+```
+
+```text
+| Brand | API | Owner project | Base path | Audience | Authentication | Description | Status |
+|---|---|---|---|---|---|---|---|
+```
+
+```text
+| Brand | API | Method | Path | Request body | Response | Authentication | Purpose | Status |
+|---|---|---|---|---|---|---|---|---|
+```
+
+Rules:
+
+- Group data by brand; `SBM` is its own brand.
+- Update for application, service, language, framework, version, container, integration or architecture changes.
+- Update for endpoint creation, removal, method, path, request body or response changes.
+- Use tables for inventories and contracts.
+- Store suite relationships and boundaries, not project transcripts.
 
 ---
 
 ## 4. Global `BUSINESS_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/BUSINESS_CONTEXT.md
+```
 
 Required structure:
 
@@ -124,31 +229,59 @@ Required structure:
 ## 1. Business overview
 ## 2. Product vision
 ## 3. Business actors
-## 4. Organizations and brands
-## 5. Core business domains
-## 6. Business entities
-## 7. Business rules
-## 8. Commercial flows
-## 9. Pricing and fiscal concepts
-## 10. Inventory and catalog concepts
-## 11. Sales and order concepts
-## 12. Provider and branch concepts
-## 13. Terminology
-## 14. Validated business decisions
-## 15. Business constraints
-## 16. Pending business definitions
-## 17. Document boundary
+## 4. Brands and franchises
+## 5. Brand operational profile
+## 6. Enabled modules by brand
+## 7. Core business domains
+## 8. Business entities
+## 9. Business rules
+## 10. Commercial flows
+## 11. Pricing and fiscal concepts
+## 12. Inventory and catalog concepts
+## 13. Sales and order concepts
+## 14. Provider and branch concepts
+## 15. Documentation references
+## 16. Terminology
+## 17. Validated business decisions
+## 18. Business constraints
+## 19. Pending business definitions
+## 20. Document boundary
 ```
 
-Section rules:
+Required tables:
 
-- Store business meaning, not implementation detail.
-- Technical references are allowed only when required to explain ownership.
-- Do not infer business rules from code alone.
+```text
+| Brand ID | Brand | Franchise | Description | Status | Source |
+|---|---|---:|---|---|---|
+```
+
+```text
+| Brand | Locales enabled | Local count | Client count | Product count | Ticket count | Stock tracked | Last updated | Source |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+```
+
+```text
+| Brand | Module | Enabled | Description | Effective date | Source |
+|---|---|---:|---|---|---|
+```
+
+Rules:
+
+- Boolean values use `1 = true`, `0 = false`.
+- Unknown counts use `N/A`.
+- Never invent business metrics.
+- Update when brands, franchises, business behavior or enabled modules change.
+- Technical changes update this context only when business capability changes.
 
 ---
 
 ## 5. Global `QA_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/QA_CONTEXT.md
+```
 
 Required structure:
 
@@ -159,34 +292,231 @@ Required structure:
 > Purpose
 > Accuracy note
 
-## 1. QA strategy
-## 2. Quality gates
-## 3. Test levels
-## 4. Test environments
-## 5. Required evidence
-## 6. Coverage rules
-## 7. Static analysis
-## 8. Security validation
-## 9. API validation
-## 10. Database validation
-## 11. Deployment validation
+## 1. Suite QA overview
+## 2. Quality policy
+## 3. Quality gates
+## 4. Project QA summaries
+## 5. Test inventory
+## 6. Coverage summary
+## 7. Static analysis summary
+## 8. Security validation summary
+## 9. API validation summary
+## 10. Database validation summary
+## 11. Deployment validation summary
 ## 12. Defect classification
-## 13. Release criteria
-## 14. Accepted exceptions
-## 15. Current QA status
-## 16. Pending QA work
-## 17. Document boundary
+## 13. Risk classification
+## 14. Release criteria
+## 15. Accepted exceptions
+## 16. Current QA status
+## 17. Pending QA work
+## 18. Related documentation
+## 19. Document boundary
 ```
 
-Section rules:
+Required tables:
 
-- Record only executed and evidenced validation.
-- Never invent coverage, SonarQube, tests or deployments.
-- Separate required QA policy from current QA results.
+```text
+| Project | QA context | Test count | Passed | Failed | Coverage | SonarQube status | Last execution | Overall risk | Evidence |
+|---|---|---:|---:|---:|---|---|---|---:|---|
+```
+
+```text
+| Test ID | Project | Description | Logic type | Components | Risk | Last execution | Result | Evidence |
+|---|---|---|---|---|---:|---|---|---|
+```
+
+Risk scale:
+
+```text
+0 = none
+1 = very low
+2 = low
+3 = medium
+4 = high
+5 = critical
+```
+
+Rules:
+
+- `qa-check.sh` executes tests, coverage and SonarQube.
+- `context-deploy` extracts and packages QA evidence.
+- `context-upgrade` updates project and global QA contexts.
+- New, removed or changed tests update both QA contexts.
+- Global QA stores summaries; project QA stores detail.
+- Never invent tests, dates, coverage or SonarQube results.
 
 ---
 
-## 6. Global `SYS_PROMPT.md`
+## 6. Global `SECURITY_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/SECURITY_CONTEXT.md
+```
+
+Required structure:
+
+```text
+# SECURITY_CONTEXT.md
+
+> Last updated
+> Purpose
+> Accuracy note
+
+## 1. Security overview
+## 2. Security objectives
+## 3. Assets and trust boundaries
+## 4. Authentication
+## 5. Authorization
+## 6. Roles and permissions
+## 7. Tenant and brand isolation
+## 8. Secrets management
+## 9. Data protection
+## 10. Network security
+## 11. Dependency security
+## 12. Secure development lifecycle
+## 13. Security testing
+## 14. Vulnerability management
+## 15. Logging and audit
+## 16. Incident response
+## 17. Security risks
+## 18. Accepted exceptions
+## 19. Security roadmap
+## 20. Related documentation
+## 21. Document boundary
+```
+
+Required table:
+
+```text
+| Control ID | Domain | Control | Projects | Status | Evidence | Risk | Owner |
+|---|---|---|---|---|---|---:|---|
+```
+
+Rules:
+
+- Store security architecture, controls, protocols, risks and roadmap.
+- Never store secret values.
+- Update when authentication, authorization, roles, permissions, tenant isolation, controls, protocols or security tooling change.
+
+---
+
+## 7. Global `DATA_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/DATA_CONTEXT.md
+```
+
+Required structure:
+
+```text
+# DATA_CONTEXT.md
+
+> Last updated
+> Purpose
+> Accuracy note
+
+## 1. Data architecture overview
+## 2. Data ownership
+## 3. Databases and schemas
+## 4. Core entities
+## 5. Entity relationships
+## 6. Data flows
+## 7. Data contracts
+## 8. Data classification
+## 9. Sensitive data
+## 10. Data integrity
+## 11. Migration ownership
+## 12. Retention and deletion
+## 13. Backup and recovery
+## 14. Data observability
+## 15. Data risks
+## 16. Pending data work
+## 17. Related documentation
+## 18. Document boundary
+```
+
+Required tables:
+
+```text
+| Database | Schema | Owner project | Brand | Purpose | Migration owner | Status |
+|---|---|---|---|---|---|---|
+```
+
+```text
+| Entity | Owner project | Schema | Brand | Description | Sensitive | Source of truth |
+|---|---|---|---|---|---:|---|
+```
+
+Rules:
+
+- PostgreSQL and Flyway own business schemas unless explicitly changed.
+- Do not infer relationships or classifications without evidence.
+- Update for schema, entity, ownership, migration, classification, retention or backup changes.
+
+---
+
+## 8. Global `DECISIONS_CONTEXT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/DECISIONS_CONTEXT.md
+```
+
+Required structure:
+
+```text
+# DECISIONS_CONTEXT.md
+
+> Last updated
+> Purpose
+> Accuracy note
+
+## 1. Decision process
+## 2. Active decisions
+## 3. Proposed decisions
+## 4. Superseded decisions
+## 5. Rejected alternatives
+## 6. Decision impact
+## 7. Decision references
+## 8. Document boundary
+```
+
+Required table:
+
+```text
+| ADR ID | Date | Status | Decision | Context | Alternatives | Consequences | Projects | Documentation |
+|---|---|---|---|---|---|---|---|---|
+```
+
+Allowed statuses:
+
+```text
+proposed
+accepted
+superseded
+rejected
+```
+
+Rules:
+
+- Preserve decision history.
+- Do not mark a proposal accepted without evidence.
+- Link decisions to projects and documentation.
+
+---
+
+## 9. Global `SYS_PROMPT.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/SYS_PROMPT.md
+```
 
 Required structure:
 
@@ -197,32 +527,60 @@ Required structure:
 ## Objective
 ## Required inputs
 ## Input meaning
-## Change determination
-## Allowed outputs
+## Execution modes
+## Evidence priority
+## Evidence reliability and hallucination controls
+## Allowed target files
 ## Protected files
 ## Context format contract
-## Context reconstruction rules
-## Project context
-## Suite project context
-## README files
+## Mandatory generation procedure
+## Input and output separation
+## Patch model
+## Patch filenames
+## Global synchronization rules
+## Project context rules
+## Suite context rules
+## Business context rules
+## QA context rules
+## Security context rules
+## Data context rules
+## Decisions context rules
+## README rules
 ## QA evidence
 ## Commit nomenclature
 ## Executive summary
 ## Database rules
 ## Output rules
 ## Manifest
+## Manifest construction rules
+## Final validation
 ```
 
-Section rules:
+Rules:
 
-- `Context format contract` must require compliance with this file.
-- The prompt must not redefine formats independently.
-- Output filenames and manifest contracts must be explicit.
-- Protected files must be listed explicitly.
+- Require compliance with this file.
+- Use section-level patches.
+- Synchronize project and global project contexts.
+- Synchronize project and global QA contexts.
+- Update suite, business, security, data and decisions contexts when their trigger rules apply.
+- Explicitly list allowed and protected paths.
+- Require a deterministic generation sequence before producing any patch.
+- Separate input evidence from output artifacts explicitly.
+- Require the output manifest to be created from the final valid ZIP contents only.
+- Reject unsupported facts, inferred completion, invented QA, invented migrations and invented deployment status.
+- Reject unknown, duplicated, reordered or unauthorized headings.
+- Reject protected, evidence-only or input-only files from `allowed_files` and `updated_files`.
+- Require a complete final validation pass before returning `context-upgrade.zip`.
 
 ---
 
-## 7. Project `context/PROJECT_CONTEXT.md`
+## 10. Project `context/PROJECT_CONTEXT.md`
+
+Required path pattern:
+
+```text
+SBM-SUITE/<project>/context/PROJECT_CONTEXT.md
+```
 
 Required structure:
 
@@ -235,7 +593,7 @@ Required structure:
 
 ## 1. Executive summary
 ## 2. Project purpose
-## 3. Current objective
+## 3. Current objectives
 ## 4. Scope and ownership
 ## 5. Architecture
 ## 6. Runtime and containers
@@ -254,21 +612,37 @@ Required structure:
 ## 19. Pending work
 ## 20. Required behavior
 ## 21. Historical decisions
-## 22. Document boundary
+## 22. Related documentation
+## 23. Document boundary
 ```
 
-Section rules:
+Required table in `## 3. Current objectives`:
 
-- Keep implementation state separate from planned work.
-- Endpoint behavior belongs in `API surface`.
-- Completed implementation belongs in `Implemented behavior`.
-- Test results belong only in `Validation evidence`.
-- Database impact must state explicitly when none exists.
-- Project-specific headings may be added only through an approved update to this format file.
+```text
+| ID | Objective | Status | Priority | Target date | Branch | Documentation |
+|---|---|---|---:|---|---|---|
+```
+
+Rules:
+
+- Multiple objectives are allowed.
+- `Status`: `active` or `pending`.
+- `Priority`: integer from `0` to `5`.
+- `Target date`: optional.
+- Branch is mandatory before implementation.
+- Branch nomenclature follows section 2.
+- Completed or discarded objectives are removed.
+- Every objective change updates the global project context.
 
 ---
 
-## 8. Project `context/QA_CONTEXT.md`
+## 11. Project `context/QA_CONTEXT.md`
+
+Required path pattern:
+
+```text
+SBM-SUITE/<project>/context/QA_CONTEXT.md
+```
 
 Required structure:
 
@@ -279,34 +653,81 @@ Required structure:
 > Purpose
 > Accuracy note
 
-## 1. Project QA scope
-## 2. Required quality gates
-## 3. Test structure
-## 4. Unit tests
-## 5. Integration tests
-## 6. API tests
-## 7. Database tests
-## 8. Security tests
-## 9. Static analysis
-## 10. Coverage
-## 11. Test data and fixtures
-## 12. Environment requirements
-## 13. Current validated evidence
-## 14. Known defects
-## 15. Accepted exceptions
-## 16. Pending QA work
-## 17. Document boundary
+## 1. Project technical details
+## 2. Project QA scope
+## 3. Required quality gates
+## 4. Test environments
+## 5. Test structure
+## 6. Test inventory
+## 7. Test data and fixtures
+## 8. Unit tests
+## 9. Integration tests
+## 10. API tests
+## 11. Database tests
+## 12. Security tests
+## 13. Static analysis
+## 14. Coverage
+## 15. SonarQube
+## 16. Current validated evidence
+## 17. Known defects
+## 18. Accepted exceptions
+## 19. Pending QA work
+## 20. Related documentation
+## 21. Document boundary
 ```
 
-Section rules:
+Required technical details table:
 
-- Distinguish policy from current results.
-- Every result must include its evidence source.
-- Do not overwrite historical evidence without preserving relevant records.
+```text
+| Attribute | Value |
+|---|---|
+| Project | |
+| Language | |
+| Framework | |
+| Runtime | |
+| Test framework | |
+| Coverage tool | |
+| Static analysis tool | |
+| SonarQube project key | |
+| QA execution command | |
+```
+
+Required test inventory table:
+
+```text
+| Test ID | Description | Logic type | Components | Risk | Last execution | Result | Evidence |
+|---|---|---|---|---:|---|---|---|
+```
+
+Allowed logic types:
+
+```text
+unit
+integration
+api
+database
+security
+static-analysis
+coverage
+deployment
+```
+
+Rules:
+
+- Use the risk scale from section 5.
+- Every result requires evidence.
+- New, removed or modified tests update project and global QA contexts.
+- Preserve relevant historical evidence.
 
 ---
 
-## 9. Project `context/DEPLOY_CONTEXT.md`
+## 12. Project `context/DEPLOY_CONTEXT.md`
+
+Required path pattern:
+
+```text
+SBM-SUITE/<project>/context/DEPLOY_CONTEXT.md
+```
 
 Required structure:
 
@@ -334,18 +755,19 @@ Required structure:
 ## 15. Current deployment status
 ## 16. Known deployment risks
 ## 17. Pending deployment work
-## 18. Document boundary
+## 18. Related documentation
+## 19. Document boundary
 ```
 
-Section rules:
+Rules:
 
-- Never expose secret values.
-- Separate local, development, staging and production behavior.
-- Do not claim a deployment occurred without explicit evidence.
+- Never expose secrets.
+- Separate environment behavior.
+- Do not claim deployment without evidence.
 
 ---
 
-## 10. Project and suite `README.md`
+## 13. Project and suite `README.md`
 
 Required structure:
 
@@ -368,16 +790,37 @@ Required structure:
 ## Related documentation
 ```
 
-Section rules:
+Rules:
 
-- README files describe stable user-facing behavior.
-- Do not include temporary implementation notes.
-- Do not include historical chat decisions.
-- Omit sections that are genuinely not applicable only when the source README already omits them.
+- Describe stable user-facing behavior.
+- Exclude temporary notes and chat history.
+- Use repository-relative documentation paths.
 
 ---
 
-## 11. `FORMAT_CONTEXT.md`
+## 14. Documentation references
+
+Allowed path patterns:
+
+```text
+SBM-SUITE/context/documentation/<page>/<page>.md
+SBM-SUITE/context/documentation/<page>/subpages/<subpage>.md
+```
+
+Rules:
+
+1. Main pages are editable documentation documents.
+2. Main pages maintain links to their subpages.
+3. Contexts identify affected pages and subpages.
+4. Context upgrades do not modify documentation.
+5. Documentation changes use the separate documentation workflow.
+6. Creating, deleting, renaming or structurally changing pages requires manual updates to documentation formats and prompts.
+7. Git is the primary source of truth in the first stage.
+8. Notion synchronization is downstream.
+
+---
+
+## 15. `FORMAT_CONTEXT.md`
 
 Required structure:
 
@@ -389,19 +832,23 @@ Required structure:
 ## 3. Global SUITE_CONTEXT.md
 ## 4. Global BUSINESS_CONTEXT.md
 ## 5. Global QA_CONTEXT.md
-## 6. Global SYS_PROMPT.md
-## 7. Project context/PROJECT_CONTEXT.md
-## 8. Project context/QA_CONTEXT.md
-## 9. Project context/DEPLOY_CONTEXT.md
-## 10. Project and suite README.md
-## 11. FORMAT_CONTEXT.md
-## 12. Enforcement rules
-## 13. Document boundary
+## 6. Global SECURITY_CONTEXT.md
+## 7. Global DATA_CONTEXT.md
+## 8. Global DECISIONS_CONTEXT.md
+## 9. Global SYS_PROMPT.md
+## 10. Project context/PROJECT_CONTEXT.md
+## 11. Project context/QA_CONTEXT.md
+## 12. Project context/DEPLOY_CONTEXT.md
+## 13. Project and suite README.md
+## 14. Documentation references
+## 15. FORMAT_CONTEXT.md
+## 16. Enforcement rules
+## 17. Document boundary
 ```
 
 ---
 
-## 12. Enforcement rules
+## 16. Enforcement rules
 
 Every context export and upgrade workflow must:
 
@@ -409,26 +856,160 @@ Every context export and upgrade workflow must:
 2. Make it available to RAG retrieval.
 3. Include its complete contents in the export package.
 4. Never allow ChatGPT to modify it through `context-upgrade`.
-5. Validate every generated context against its required heading structure.
-6. Reject files with missing, renamed, duplicated or reordered required headings.
-7. Allow content changes only inside existing sections.
-8. Reject unexpected top-level sections unless this contract explicitly allows them.
-9. Report structural validation errors before replacement.
-10. Keep the input ZIP untouched when validation fails.
-11. Apply replacements only after all files pass structural validation.
-12. Preserve backup, rollback and atomic replacement behavior.
+5. Validate every section patch against exact target headings.
+6. Reject unknown, duplicated or unauthorized headings.
+7. Reject complete context or README replacements.
+8. Report validation errors before replacement.
+9. Keep input ZIPs untouched when validation fails.
+10. Apply patches only after all validations pass.
+11. Preserve backup, rollback and atomic replacement.
+12. Synchronize project and global project contexts.
+13. Synchronize project and global QA contexts.
+14. Update suite context for API, body, structural, technology, version and integration changes.
+15. Update business context for brand, franchise, business behavior and enabled-module changes.
+16. Update security, data and decisions contexts when their domains change.
+17. Require SHA-256 hashes for every output file.
+18. Create backups before replacement.
+19. Print the proposed commit message after context upgrade.
+20. Keep context and documentation collections separate.
+21. Preserve the manual workflow until asynchronous database flags are implemented.
+22. Validate every patch operation against the exact target file and exact heading defined in this contract.
+23. Reject a patch when the target section cannot be identified unambiguously.
+24. Reject duplicate operations for the same target file and heading.
+25. Reject output manifests copied or partially copied from the input manifest.
+26. Reject `allowed_files` entries that are not permitted output paths.
+27. Reject `updated_files` entries that are not physically present in the ZIP.
+28. Reject ZIP files containing input evidence, protected files, complete context files or complete README files.
+29. Reject mismatches among ZIP paths, `allowed_files`, `updated_files` and `content_hashes`.
+30. Reject missing, incorrect or duplicate SHA-256 hashes.
+31. Reject unsupported facts, invented values and claims not traceable to supplied evidence.
+32. Require the LLM to omit unsafe patches instead of guessing.
+33. Require all validation failures and omitted changes to be reported in `EXECUTIVE_README.md`.
+34. Apply no replacement when any global validation fails.
+35. Treat backend validation as mandatory even when the LLM reports successful self-validation.
+
+36. Accept only section-level JSON patch files under `patches/`.
+37. Reject complete context and README files inside `context-upgrade.zip`.
+38. Require every patch filename to match exactly one authorized target file.
+39. Require every patch `target_file` to match its filename mapping exactly.
+40. Require `operations` to be a non-empty JSON array.
+41. Allow only `replace_section` and `append_to_section`.
+42. Require every operation heading to match an exact target heading defined in this contract.
+43. Require `replace_section` content to begin with the exact target heading.
+44. Reject operation content containing another same-level heading.
+45. Reject duplicate operations for the same target file and heading.
+46. Require required tables to preserve exact headers and column order.
+47. Require `manifest.updated_files` to equal every physical ZIP file except `manifest.json`.
+48. Require `manifest.content_hashes` keys to equal `manifest.updated_files`.
+49. Require every `updated_files` path to appear in `allowed_files`.
+50. Forbid `manifest.json` from `updated_files` and `content_hashes`.
+51. Require at least one valid context or README patch.
+52. Validate all patches in memory before creating backups or modifying targets.
+53. Apply all validated patches to staged copies before replacing repository files.
+54. Validate the complete staged documents against this contract after patch application.
+55. Create backups only after ZIP, manifest, hash, patch and staged-document validation succeeds.
+56. Replace targets atomically and roll back every replacement if any operation fails.
+57. Remove the input ZIP only after the complete upgrade succeeds.
+
+
+### Patch archive contract
+
+Allowed patch paths and exact target mappings:
+
+```text
+patches/global-project-context.json
+→ SBM-SUITE/context/PROJECT_CONTEXT.md
+
+patches/suite-context.json
+→ SBM-SUITE/context/SUITE_CONTEXT.md
+
+patches/business-context.json
+→ SBM-SUITE/context/BUSINESS_CONTEXT.md
+
+patches/global-qa-context.json
+→ SBM-SUITE/context/QA_CONTEXT.md
+
+patches/security-context.json
+→ SBM-SUITE/context/SECURITY_CONTEXT.md
+
+patches/data-context.json
+→ SBM-SUITE/context/DATA_CONTEXT.md
+
+patches/decisions-context.json
+→ SBM-SUITE/context/DECISIONS_CONTEXT.md
+
+patches/global-readme.json
+→ SBM-SUITE/README.md
+
+patches/project-context.json
+→ SBM-SUITE/<project>/context/PROJECT_CONTEXT.md
+
+patches/project-qa-context.json
+→ SBM-SUITE/<project>/context/QA_CONTEXT.md
+
+patches/project-deploy-context.json
+→ SBM-SUITE/<project>/context/DEPLOY_CONTEXT.md
+
+patches/project-readme.json
+→ SBM-SUITE/<project>/README.md
+```
+
+Every patch file must use this JSON structure:
+
+```json
+{
+  "target_file": "SBM-SUITE/<project>/context/PROJECT_CONTEXT.md",
+  "operations": [
+    {
+      "operation": "replace_section",
+      "heading": "## 3. Current objectives",
+      "content": "## 3. Current objectives\n\nComplete Markdown for this section."
+    }
+  ]
+}
+```
+
+### Output manifest contract
+
+The output manifest must be generated from the final ZIP contents only.
+
+Allowed non-patch output paths:
+
+```text
+EXECUTIVE_README.md
+COMMIT_MESSAGE.md
+manifest.json
+USER_PROMPT.md
+```
+
+Rules:
+
+- `USER_PROMPT.md` is allowed only in `user-guided` mode.
+- Every other output path must be an exact patch path listed above.
+- Input evidence and protected workflow files are forbidden from all output lists.
+- `updated_files` contains every physical ZIP file except `manifest.json`.
+- `content_hashes` contains exactly the same paths as `updated_files`.
+- Every hash is SHA-256 of the exact final UTF-8 file content.
+- `allowed_files` contains only authorized output paths.
+- No output path may be absolute, duplicated, contain `..` or reference a symlink.
+- The source manifest must never be copied as the output manifest.
 
 ---
 
-## 13. Document boundary
+## 17. Document boundary
 
-This file defines structure only.
+This file defines context structures, synchronization rules, tables and validation contracts only.
 
-It does not define:
+It does not define actual:
 
 - business behavior;
 - architecture decisions;
 - QA results;
-- deployment status;
+- deployments;
 - implementation completion;
-- project priorities.
+- priorities;
+- objective statuses;
+- metrics;
+- coverage;
+- SonarQube results;
+- documentation content.
