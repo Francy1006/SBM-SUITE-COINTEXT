@@ -26,6 +26,14 @@ The project being processed is:
 {{PROJECT_NAME}}
 ```
 
+Resolve it only through these canonical repository and container mappings:
+
+```text
+DP-API            → SBM-SUITE/dp/DP-API/            → /suite/dp/DP-API
+SBM-API           → SBM-SUITE/sbm/SBM-API/          → /suite/sbm/SBM-API
+sbm-ai-assistant  → SBM-SUITE/sbm/sbm-ai-assistant/ → /suite/sbm/sbm-ai-assistant
+```
+
 ## Required inputs
 
 Read and correlate:
@@ -219,7 +227,7 @@ Only files explicitly listed in the supplied manifest and `documentation-files.t
 Every target must:
 
 - already exist;
-- be under `SBM-SUITE/context/documentation/`;
+- be under `SBM-SUITE/context/documentation/pages/`;
 - use the `.md` extension;
 - match an exact authorized repository-relative path;
 - be represented in the documentation hierarchy;
@@ -241,9 +249,9 @@ SBM-SUITE/context/QA_CONTEXT.md
 SBM-SUITE/context/SECURITY_CONTEXT.md
 SBM-SUITE/context/DATA_CONTEXT.md
 SBM-SUITE/context/DECISIONS_CONTEXT.md
-SBM-SUITE/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
-SBM-SUITE/{{PROJECT_NAME}}/context/QA_CONTEXT.md
-SBM-SUITE/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/QA_CONTEXT.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
 ```
 
 Do not modify source code, scripts, configuration, contexts, README files or files belonging to other workflows.
@@ -390,13 +398,13 @@ Each generated Markdown file must preserve the same repository-relative path ben
 Example source path:
 
 ```text
-SBM-SUITE/context/documentation/qa-and-testing/subpages/dp-api.md
+SBM-SUITE/context/documentation/pages/qa-and-testing/subpages/dp-api.md
 ```
 
 Required ZIP path:
 
 ```text
-documentation/qa-and-testing/subpages/dp-api.md
+documentation/pages/qa-and-testing/subpages/dp-api.md
 ```
 
 Rules:
@@ -597,7 +605,9 @@ Documentation workflow descriptions must preserve:
 - existing-file allowlist;
 - backup before replacement;
 - atomic replacement or rollback;
-- separate input, output and backup directories;
+- separate input and output directories under `SBM-SUITE/context/documentation/`;
+- the single shared backup root `SBM-SUITE/context/backup/`;
+- no documentation-local or alternate backup directory;
 - no automatic Git commit or push;
 - future Notion synchronization as downstream and planned.
 
@@ -858,6 +868,8 @@ Before generating the ZIP, verify:
 25. every factual claim is supported by supplied evidence;
 26. planned, current, pending and deprecated states remain separated;
 27. no unsafe or partially validated file is included.
+28. every source target is below `SBM-SUITE/context/documentation/pages/` and every ZIP target preserves `documentation/pages/`;
+29. the applying workflow uses only `SBM-SUITE/context/backup/` for backups;
 
 If any file-level validation fails, omit that documentation file and report the exact limitation in `EXECUTIVE_README.md`.
 

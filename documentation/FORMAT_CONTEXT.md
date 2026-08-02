@@ -55,6 +55,8 @@
 38. Every subpage additionally requires `> **Parent page:**`.
 39. Variants without the final colon are invalid.
 40. Metadata labels must appear exactly once and in the order defined for the page type.
+41. Documentation files live only below `SBM-SUITE/context/documentation/pages/`.
+42. Workflow backups use the suite-wide `SBM-SUITE/context/backup/` root; documentation-local and alternate backup roots are forbidden.
 
 
 ---
@@ -90,26 +92,31 @@ Required workflow directories:
 ```text
 SBM-SUITE/context/documentation/input/
 SBM-SUITE/context/documentation/output/
-SBM-SUITE/context/documentation/backup/
+```
+
+Shared backup root:
+
+```text
+SBM-SUITE/context/backup/
 ```
 
 Documentation page pattern:
 
 ```text
-SBM-SUITE/context/documentation/<page>/<page>.md
+SBM-SUITE/context/documentation/pages/<page>/<page>.md
 ```
 
 Documentation subpage pattern:
 
 ```text
-SBM-SUITE/context/documentation/<page>/subpages/<subpage>.md
+SBM-SUITE/context/documentation/pages/<page>/subpages/<subpage>.md
 ```
 
 Example:
 
 ```text
-SBM-SUITE/context/documentation/qa-and-testing/qa-and-testing.md
-SBM-SUITE/context/documentation/qa-and-testing/subpages/dp-api.md
+SBM-SUITE/context/documentation/pages/qa-and-testing/qa-and-testing.md
+SBM-SUITE/context/documentation/pages/qa-and-testing/subpages/dp-api.md
 ```
 
 Rules:
@@ -736,7 +743,7 @@ The documentation workflow may modify only files explicitly listed in the input 
 Required validation:
 
 1. path is repository-relative;
-2. path remains under `SBM-SUITE/context/documentation/`;
+2. path remains under `SBM-SUITE/context/documentation/pages/`;
 3. extension is `.md`;
 4. file already exists unless creation is explicitly authorized;
 5. no absolute path;
@@ -817,7 +824,7 @@ Every documentation export and upgrade workflow must:
 15. Replace files only after all files pass.
 16. Preserve rollback behavior.
 17. Return a proposed commit message.
-18. Keep documentation and context backups separate.
+18. Distinguish documentation and context backup records by their manifest `workflow` value while storing both below `SBM-SUITE/context/backup/`.
 19. Keep `sbm_documentation` separate from `sbm_contexts` and `sbm_docs`.
 20. Preserve the manual workflow until asynchronous orchestration is implemented.
 21. Never create, delete, rename or move a documentation page without explicit manual authorization.
@@ -852,6 +859,7 @@ Every documentation export and upgrade workflow must:
 49. Reject a documentation package containing unresolved template tokens.
 50. Record `SYS_PROMPT.md` and `FORMAT_CONTEXT.md` in the source package manifest.
 51. Treat workflow contracts as input-only files that cannot appear in `documentation-upgrade.zip`.
+52. Never create or use a backup directory below `SBM-SUITE/context/documentation/`.
 
 
 ---

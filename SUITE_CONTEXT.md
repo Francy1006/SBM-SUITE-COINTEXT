@@ -1,6 +1,6 @@
 # SUITE_CONTEXT.md
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-08-02
 >
 > **Purpose**
 >
@@ -23,14 +23,8 @@ Client business operations
 Internal platform operations
 → SBM-API
 
-Frontend interaction
-→ SBM-MANAGER
-
-Physical database structure
-→ SBM-DB / Flyway
-
 AI orchestration
-→ SBM-AI-ASSISTANT
+→ sbm-ai-assistant
 ```
 
 Git Markdown is the current source of truth for contexts and documentation. Qdrant is a semantic index only.
@@ -63,40 +57,34 @@ Current business scope includes products, materials, services, catalogs, pricing
 
 | Project | Brand | Primary responsibility | Canonical owner |
 |---|---|---|---|
-| SBM-MANAGER | SBM | Enterprise frontend | Frontend interaction |
 | DP-API | Ditaly Pasta | Client-facing business API | Client operations |
 | SBM-API | SBM | Internal platform API | Platform administration |
-| SBM-DB | SBM | PostgreSQL schemas, Flyway and DBML | Physical database structure |
-| SBM-AI-ASSISTANT | SBM | AI orchestration, RAG, embeddings and Tools | AI-assisted workflows |
+| sbm-ai-assistant | SBM | AI orchestration, RAG, embeddings and Tools | AI-assisted workflows |
 | SBM-SUITE/context | SBM | Global context and documentation contracts | Context governance |
+
+Canonical repository paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Container mounts preserve those brand segments as `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`.
 
 ## 5. Applications and services
 
 | Brand | Project | Application or service | Type | Description | Language | Framework | Version | Runtime | Owner |
 |---|---|---|---|---|---|---|---|---|---|
-| SBM | SBM-MANAGER | Enterprise frontend | frontend | Client and internal user interface | JavaScript / TypeScript | Vue.js | 3 | browser / container | SBM-MANAGER |
 | Ditaly Pasta | DP-API | Client-facing API | API | Business operations for authorized client users | Python | Django REST Framework | N/A | container | DP-API |
 | SBM | SBM-API | Internal platform API | API | Critical, contractual and administrative platform operations | Python | Django REST Framework | N/A | container | SBM-API |
-| SBM | SBM-DB | PostgreSQL | database | Business and platform persistence | SQL | PostgreSQL | 16 | container | SBM-DB |
-| SBM | SBM-DB | Flyway | migration service | Versioned database migrations | SQL | Flyway | 10 | container | SBM-DB |
-| SBM | SBM-AI-ASSISTANT | AI orchestrator | API / AI service | Intent routing, RAG, embeddings and explicit Tools | Python | FastAPI | N/A | container | SBM-AI-ASSISTANT |
-| SBM | SBM-AI-ASSISTANT | Qdrant | vector database | Semantic indexes for documents, contexts and documentation | Rust service | Qdrant | N/A | container | SBM-AI-ASSISTANT |
+| SBM | sbm-ai-assistant | AI orchestrator | API / AI service | Intent routing, RAG, embeddings and explicit Tools | Python | FastAPI | N/A | container | sbm-ai-assistant |
+| SBM | sbm-ai-assistant | Qdrant | vector database | Semantic indexes for documents, contexts and documentation | Rust service | Qdrant | N/A | container | sbm-ai-assistant |
 | SBM | QA infrastructure | SonarQube | quality service | Static analysis and quality gates | Java service | SonarQube | N/A | container | QA workflow |
 
 ## 6. Technology inventory
 
 | Brand | Project | Category | Technology | Version | Purpose | Status |
 |---|---|---|---|---|---|---|
-| SBM | SBM-MANAGER | frontend | Vue.js | 3 | Enterprise frontend | active |
 | Ditaly Pasta | DP-API | backend | Python | N/A | API implementation | active |
 | Ditaly Pasta | DP-API | backend framework | Django REST Framework | N/A | REST API | active |
 | SBM | SBM-API | backend | Python | N/A | Internal API implementation | active |
 | SBM | SBM-API | backend framework | Django REST Framework | N/A | Internal REST API | active |
-| SBM | SBM-DB | database | PostgreSQL | 16 | Relational persistence | active |
-| SBM | SBM-DB | migrations | Flyway | 10 | Schema versioning | active |
-| SBM | SBM-AI-ASSISTANT | backend | Python | N/A | AI orchestration | active |
-| SBM | SBM-AI-ASSISTANT | backend framework | FastAPI | N/A | AI API | active |
-| SBM | SBM-AI-ASSISTANT | vector database | Qdrant | N/A | Semantic retrieval | active |
+| SBM | sbm-ai-assistant | backend | Python | N/A | AI orchestration | active |
+| SBM | sbm-ai-assistant | backend framework | FastAPI | N/A | AI API | active |
+| SBM | sbm-ai-assistant | vector database | Qdrant | N/A | Semantic retrieval | active |
 | SBM | Shared infrastructure | containers | Docker Compose | N/A | Local orchestration | active |
 | SBM | QA infrastructure | static analysis | SonarQube | N/A | Quality gates | active |
 
@@ -106,7 +94,7 @@ Client-facing flow:
 
 ```text
 Client user
-→ SBM-MANAGER or approved channel
+→ approved client channel
 → DP-API
 → validated domain operation
 → PostgreSQL
@@ -116,7 +104,7 @@ Internal platform flow:
 
 ```text
 Internal SBM user
-→ SBM-MANAGER
+→ approved internal channel
 → SBM-API
 → platform operation
 → PostgreSQL
@@ -126,8 +114,8 @@ AI-assisted flow:
 
 ```text
 User
-→ Slack / SBM-MANAGER / approved channel
-→ SBM-AI-ASSISTANT
+→ Slack / approved channel
+→ sbm-ai-assistant
 → explicit Tool
 → DP-API or SBM-API
 → structured result
@@ -138,7 +126,7 @@ Context flow:
 ```text
 Project Git evidence
 → context-deploy.sh
-→ SBM-AI-ASSISTANT
+→ sbm-ai-assistant
 → Qdrant sbm_contexts
 → RAG package
 → ChatGPT
@@ -184,21 +172,21 @@ Rules:
 |---|---|---|---|---|---|---|---|
 | Ditaly Pasta | DP-API | DP-API | `/api` | Authorized client users | Required | Client-facing business operations | active |
 | SBM | SBM-API | SBM-API | `/api` | Internal SBM users and services | Required | Internal platform administration | active |
-| SBM | SBM-AI-ASSISTANT | SBM-AI-ASSISTANT | `/` | Approved channels and internal integrations | Endpoint-specific | AI orchestration and context services | active |
+| SBM | sbm-ai-assistant | sbm-ai-assistant | `/` | Approved channels and internal integrations | Endpoint-specific | AI orchestration and context services | active |
 
 ## 10. Endpoint contracts
 
 | Brand | API | Method | Path | Request body | Response | Authentication | Purpose | Status |
 |---|---|---|---|---|---|---|---|---|
-| SBM | SBM-AI-ASSISTANT | GET | `/health` | none | health status | N/A | Service health check | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/contexts/export` | context export request | ZIP export metadata | Required by environment | Generate RAG context package | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/contexts/upgrade` | context upgrade ZIP | upgrade result and commit message | Required by environment | Validate and apply context patches | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/confluence/pages/{id}/ingest` | ingestion request | ingestion result | Required by environment | Ingest one Confluence page | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/confluence/ingest` | ingestion request | ingestion result | Required by environment | Ingest Confluence content | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/confluence/sync` | synchronization request | synchronization result | Required by environment | Synchronize Confluence content | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/slack/test` | Slack test payload | test result | Required by environment | Validate Slack integration | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/slack/rag` | Slack RAG query | assistant response | Slack validation | Execute RAG response | implemented |
-| SBM | SBM-AI-ASSISTANT | POST | `/slack/events` | Slack event body | acknowledgement / response | Slack signature | Receive Slack events | implemented |
+| SBM | sbm-ai-assistant | GET | `/health` | none | health status | N/A | Service health check | implemented |
+| SBM | sbm-ai-assistant | POST | `/contexts/export` | context export request | ZIP export metadata | Required by environment | Generate RAG context package | implemented |
+| SBM | sbm-ai-assistant | POST | `/contexts/upgrade` | context upgrade ZIP | upgrade result and commit message | Required by environment | Validate and apply context patches | implemented |
+| SBM | sbm-ai-assistant | POST | `/confluence/pages/{id}/ingest` | ingestion request | ingestion result | Required by environment | Ingest one Confluence page | implemented |
+| SBM | sbm-ai-assistant | POST | `/confluence/ingest` | ingestion request | ingestion result | Required by environment | Ingest Confluence content | implemented |
+| SBM | sbm-ai-assistant | POST | `/confluence/sync` | synchronization request | synchronization result | Required by environment | Synchronize Confluence content | implemented |
+| SBM | sbm-ai-assistant | POST | `/slack/test` | Slack test payload | test result | Required by environment | Validate Slack integration | implemented |
+| SBM | sbm-ai-assistant | POST | `/slack/rag` | Slack RAG query | assistant response | Slack validation | Execute RAG response | implemented |
+| SBM | sbm-ai-assistant | POST | `/slack/events` | Slack event body | acknowledgement / response | Slack signature | Receive Slack events | implemented |
 | Ditaly Pasta | DP-API | GET | `/api/products` | none | product collection | Required | List products | implemented |
 | Ditaly Pasta | DP-API | POST | `/api/products` | product payload | created product | Required | Create product | implemented |
 | Ditaly Pasta | DP-API | GET | `/api/products/{id}` | none | product detail | Required | Retrieve product | planned |
@@ -235,15 +223,13 @@ Rules:
 
 | Source | Target | Contract | Purpose | Status |
 |---|---|---|---|---|
-| SBM-MANAGER | DP-API | REST API | Client business operations | active |
-| SBM-MANAGER | SBM-API | REST API | Internal platform operations | active |
-| SBM-AI-ASSISTANT | DP-API | Explicit Tool / REST API | AI-assisted client operations | planned |
-| SBM-AI-ASSISTANT | SBM-API | Explicit Tool / REST API | AI-assisted internal operations | planned |
+| sbm-ai-assistant | DP-API | Explicit Tool / REST API | AI-assisted client operations | planned |
+| sbm-ai-assistant | SBM-API | Explicit Tool / REST API | AI-assisted internal operations | planned |
 | DP-API | PostgreSQL | ORM / approved data access | Business persistence | active |
 | SBM-API | PostgreSQL | ORM / approved data access | Platform persistence | active |
-| SBM-AI-ASSISTANT | Qdrant | Vector API | Semantic retrieval | active |
-| SBM-AI-ASSISTANT | Confluence | REST API | Documentation ingestion | active |
-| SBM-AI-ASSISTANT | Slack | Events API | Assistant interface | active |
+| sbm-ai-assistant | Qdrant | Vector API | Semantic retrieval | active |
+| sbm-ai-assistant | Confluence | REST API | Documentation ingestion | active |
+| sbm-ai-assistant | Slack | Events API | Assistant interface | active |
 | Context workflow | ChatGPT | ZIP + SYS_PROMPT | Reviewed context generation | active |
 | Documentation workflow | ChatGPT | ZIP + SYS_PROMPT | Reviewed documentation generation | planned |
 
@@ -255,7 +241,7 @@ Cross-project communication must use explicit APIs or contracts. Direct reposito
 |---|---|---:|---:|---|---|
 | DP-API | dp-core | 8000 | 8081 | sbm-network | active |
 | SBM-API | sbm-core | 8000 | 8082 | sbm-network | active |
-| SBM-AI-ASSISTANT | backend | 8000 | 8000 | sbm-network | active |
+| sbm-ai-assistant | backend | 8000 | 8000 | sbm-network | active |
 | Qdrant | qdrant | 6333 | 6333 | sbm-network | active |
 | PostgreSQL | postgres | 5432 | 5432 | sbm-network | active |
 | Flyway | flyway | N/A | N/A | sbm-network | active |
@@ -269,6 +255,9 @@ Shared configuration rules:
 
 - secrets and `.env` values must remain outside Git and ZIP packages;
 - project-specific environment files own local runtime values;
+- project context scripts resolve the absolute suite root from `SBM_SUITE_ROOT`;
+- suite-level context contracts, prompts, input, output and project-tree artifacts are resolved below `SBM-SUITE/context`;
+- container requests use repository paths mounted below `/suite`, including `/suite/<brand>/<project>` for project roots;
 - context packages may include metadata but never secret values;
 - repository-relative paths are required in manifests and documentation references;
 - context and documentation collections remain separated;
@@ -280,9 +269,9 @@ Qdrant collections:
 
 | Collection | Owner | Content | Purpose |
 |---|---|---|---|
-| `sbm_docs` | SBM-AI-ASSISTANT | Confluence documentation | Assistant knowledge |
-| `sbm_contexts` | SBM-AI-ASSISTANT | Global and project contexts | Context RAG |
-| `sbm_documentation` | SBM-AI-ASSISTANT | Git documentation pages | Documentation RAG |
+| `sbm_docs` | sbm-ai-assistant | Confluence documentation | Assistant knowledge |
+| `sbm_contexts` | sbm-ai-assistant | Global and project contexts | Context RAG |
+| `sbm_documentation` | sbm-ai-assistant | Git documentation pages | Documentation RAG |
 
 Rules:
 
@@ -376,11 +365,12 @@ qa-check.sh
 → write bounded evidence to context/qa-results.md
 
 context-deploy.sh
-→ clean context input and output directories
-→ execute project-tree.sh when present
-→ require project-tree.txt
+→ read SBM_SUITE_ROOT from the current project's .env.dev without packaging secret values
+→ clean SBM-SUITE/context/input and SBM-SUITE/context/output
+→ execute SBM-SUITE/context/project-tree.sh when present
+→ require SBM-SUITE/context/project-tree.txt
 → collect Git and QA evidence
-→ call POST /contexts/export
+→ call POST /contexts/export with the mounted project path /suite/<brand>/<project>
 → persist context-export-response.json
 → require status=completed
 → generate context-package.zip and parameterized SYS_PROMPT.md
@@ -394,6 +384,9 @@ context-upgrade.sh
 → require exactly one context-upgrade.zip
 → call POST /contexts/upgrade
 → validate workflow, project_name, updated_files, backup_directory and input_cleaned
+→ create SBM-SUITE/context/backup/<timestamp>_<project>/
+→ preserve original files, EXECUTIVE_README.md and COMMIT_MESSAGE.md
+→ write BACKUP_MANIFEST.json with project_name, workflow, generated_at, motivo, original and backup paths, and SHA-256 hashes
 → confirm the input ZIP was removed only after success
 ```
 
@@ -412,7 +405,7 @@ The backend remains the mandatory validation, backup, atomic replacement and rol
 8. ChatGPT returns documentation-upgrade.zip
 9. user places ZIP in documentation/input
 10. documentation-upgrade.sh validates authorized Markdown files
-11. create timestamped documentation backup
+11. create a timestamped documentation backup under `SBM-SUITE/context/backup/`
 12. replace validated documentation files
 13. return commit message in terminal
 14. user reviews git status
@@ -425,14 +418,15 @@ Current rules:
 - Creation, deletion, rename or structural change requires manual format and prompt updates.
 - Main pages are documents and must maintain subpage links.
 - Notion synchronization is downstream and planned for a later stage.
+- `SBM-SUITE/context/backup/` is the single backup root for context and documentation workflows; workflow-local or alternate backup roots are forbidden.
 
 ## 22. Related documentation
 
 Documentation paths follow:
 
 ```text
-SBM-SUITE/context/documentation/<page>/<page>.md
-SBM-SUITE/context/documentation/<page>/subpages/<subpage>.md
+SBM-SUITE/context/documentation/pages/<page>/<page>.md
+SBM-SUITE/context/documentation/pages/<page>/subpages/<subpage>.md
 ```
 
 Relevant documentation domains include:

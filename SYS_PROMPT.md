@@ -22,6 +22,22 @@ The project being processed is:
 {{PROJECT_NAME}}
 ```
 
+The validated project path must resolve to:
+
+```text
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/
+```
+
+The `<brand>` value must come from the supplied manifest or validated repository path. Never infer it from the project name alone.
+
+Canonical project mappings are:
+
+```text
+DP-API            → SBM-SUITE/dp/DP-API/            → /suite/dp/DP-API
+SBM-API           → SBM-SUITE/sbm/SBM-API/          → /suite/sbm/SBM-API
+sbm-ai-assistant  → SBM-SUITE/sbm/sbm-ai-assistant/ → /suite/sbm/sbm-ai-assistant
+```
+
 ## Required inputs
 
 Read and correlate:
@@ -42,7 +58,7 @@ Do not expect complete source context files in the input package.
 
 `retrieved-context.md` contains relevant context chunks selected through embeddings and Qdrant from global SBM Suite contexts and project-specific contexts.
 
-`project-tree.txt` contains the recursive structure of the current project and must be used only as structural evidence.
+`project-tree.txt` contains the recursive structure of the complete SBM Suite and must be used only as global structural evidence.
 
 Missing evidence must be reported in `EXECUTIVE_README.md`.
 
@@ -71,7 +87,7 @@ qa-results.md
 → executed tests, coverage and SonarQube evidence
 
 project-tree.txt
-→ recursive project folders and files used to understand current structure
+→ `SBM-SUITE/context/project-tree.txt`, containing recursive suite folders and files used to understand global and current-project structure
 
 manifest.json
 → RAG query, filters, sources, chunk count and package metadata
@@ -87,7 +103,7 @@ Use `evidence` when the user uploads the files without an additional project ins
 
 - follow the standard evidence priority;
 - rely primarily on Git, QA and retrieved context;
-- use `project-tree.txt` only to confirm project structure;
+- use `project-tree.txt` only to confirm suite and current-project structure;
 - do not infer planning not present in supplied evidence;
 - do not create `USER_PROMPT.md`.
 
@@ -140,7 +156,7 @@ affected module
 change type
 new or corrected behavior
 files or components affected
-project structure impact
+suite and project structure impact
 API impact
 request body impact
 response contract impact
@@ -188,11 +204,11 @@ SBM-SUITE/context/QA_CONTEXT.md
 SBM-SUITE/context/SECURITY_CONTEXT.md
 SBM-SUITE/context/DATA_CONTEXT.md
 SBM-SUITE/context/DECISIONS_CONTEXT.md
-SBM-SUITE/README.md
-SBM-SUITE/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
-SBM-SUITE/{{PROJECT_NAME}}/context/QA_CONTEXT.md
-SBM-SUITE/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
-SBM-SUITE/{{PROJECT_NAME}}/README.md
+SBM-SUITE/context/README.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/QA_CONTEXT.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
+SBM-SUITE/<brand>/{{PROJECT_NAME}}/README.md
 ```
 
 Create a patch only when supplied evidence or an explicit user-guided objective justifies changing the target file.
@@ -206,6 +222,8 @@ Do not create patches for:
 ```text
 SBM-SUITE/context/SYS_PROMPT.md
 SBM-SUITE/context/FORMAT_CONTEXT.md
+SBM-SUITE/context/documentation/SYS_PROMPT.md
+SBM-SUITE/context/documentation/FORMAT_CONTEXT.md
 FORMAT_CONTEXT.md
 ```
 
@@ -299,7 +317,7 @@ Before including a patch file, verify all of the following:
 2. `target_file` exactly matches the required mapping for the patch filename;
 3. `operations` is a non-empty array;
 4. every operation uses only `replace_section` or `append_to_section`;
-5. every `heading` exactly matches an authorized heading from `FORMAT_CONTEXT.md`;
+5. every context `heading` exactly matches an authorized heading from `FORMAT_CONTEXT.md`; every README `heading` exactly matches an existing heading in the target README;
 6. every `content` contains the required Markdown for that operation;
 7. `replace_section` content begins with the exact target heading;
 8. `content` contains no additional same-level heading;
@@ -323,7 +341,7 @@ Each patch file must contain:
 
 ```json
 {
-  "target_file": "SBM-SUITE/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md",
+  "target_file": "SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md",
   "operations": [
     {
       "operation": "replace_section",
@@ -400,19 +418,19 @@ patches/decisions-context.json
 → SBM-SUITE/context/DECISIONS_CONTEXT.md
 
 patches/global-readme.json
-→ SBM-SUITE/README.md
+→ SBM-SUITE/context/README.md
 
 patches/project-context.json
-→ SBM-SUITE/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
+→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
 
 patches/project-qa-context.json
-→ SBM-SUITE/{{PROJECT_NAME}}/context/QA_CONTEXT.md
+→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/QA_CONTEXT.md
 
 patches/project-deploy-context.json
-→ SBM-SUITE/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
+→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
 
 patches/project-readme.json
-→ SBM-SUITE/{{PROJECT_NAME}}/README.md
+→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/README.md
 ```
 
 Include only patch files that contain at least one valid operation.
@@ -431,6 +449,9 @@ Apply these rules together:
 8. Documentation paths affected by an objective must be recorded in project and global project contexts.
 9. Context changes do not directly modify documentation files.
 10. When synchronization is required but evidence is insufficient, omit unsafe operations and report the limitation.
+11. Changes to services, `.sh` scripts, models, project structure, runtime, configuration or reusable components require a project-context patch when supported by evidence.
+12. Stable changes to reusable components require a project-README patch in the same archive.
+13. Structural or functional changes that affect suite relationships or behavior require a `SUITE_CONTEXT.md` patch.
 
 ## Project context rules
 
@@ -488,9 +509,13 @@ Rules:
 
 ### Project structure evidence
 
-Use `project-tree.txt` to update only structural sections such as:
+Use the global `project-tree.txt` to update only structural sections such as:
 
-```text
+- project layout;
+- modules and applications;
+- reusable services, models, `.sh` scripts and shared utilities;
+- runtime and configuration file locations;
+- ownership boundaries visible in the tree.
 
 ## Suite context rules
 
@@ -688,7 +713,20 @@ Rules:
 
 ## README rules
 
-Patch README files only when stable documented behavior changed.
+Patch the project README whenever a reusable service, `.sh` script, model, reusable functional module, shared utility or public technical component is added, removed, renamed, moved or changed significantly.
+
+README headings are repository-owned. For README patches, use only headings that already exist exactly in the supplied target README. Preserve the complete existing H1/H2 heading sequence; do not add, remove, rename, reorder or duplicate README headings.
+
+Every project README must contain this exact section and table header:
+
+```text
+## Reusable components
+
+| File name | Path | Description |
+|---|---|---|
+```
+
+List relevant reusable components using repository-relative paths and stable descriptions. `## Reusable components` is mandatory for project READMEs, but other README headings may differ between repositories.
 
 Include only relevant final-state information:
 
@@ -711,8 +749,10 @@ Do not include:
 - temporary reasoning;
 - implementation uncertainty;
 - unfinished step-by-step notes;
-- raw project trees;
+- raw suite trees;
 - unsupported QA claims.
+
+Keep the global README general. Do not list every internal service, model or script. Patch it only for structural, architectural or suite-level functional changes, shared behavior, or global workflow changes.
 
 ## QA evidence
 
@@ -813,7 +853,7 @@ Affected module
 General objective
 Main completed changes
 Planned or proposed changes
-Project structure impact
+Suite and project structure impact
 Suite-level impact
 Business impact
 Security impact
@@ -888,6 +928,14 @@ Do not include `project-tree.txt`.
 Do not include empty patch files.
 
 Do not include explanations outside the ZIP.
+
+After all ZIP, manifest, hash, patch and staged-document validations pass, the applying workflow must create exactly one backup at:
+
+```text
+SBM-SUITE/context/backup/<timestamp>_<project>/
+```
+
+The backup must contain every original file being replaced, plus `EXECUTIVE_README.md`, `COMMIT_MESSAGE.md` and `BACKUP_MANIFEST.json`. `BACKUP_MANIFEST.json` must record `project_name`, `workflow`, `generated_at`, `motivo`, and for each backed-up file its original path, backup-relative path and SHA-256 hash. The workflow must not use or create any other backup root.
 
 ## Manifest
 
@@ -1004,6 +1052,9 @@ Before returning `context-upgrade.zip`, verify:
 16. commit metadata matches `COMMIT_MESSAGE.md`;
 17. the archive structure is not flattened;
 18. every validation failure is resolved before output.
+19. evidence-triggered project-context and project-README patches are present when services, `.sh` scripts, models, structure, runtime, configuration or reusable components changed;
+20. the applying workflow is contractually bound to `SBM-SUITE/context/backup/<timestamp>_<project>/` and the required `BACKUP_MANIFEST.json` contents;
+21. `FORMAT_CONTEXT.md` and every `SYS_PROMPT.md` remain protected and absent from patches.
 
 If any ZIP-level validation fails, do not generate the archive.
 

@@ -1,6 +1,6 @@
 # ☸️ DevOps & Platform Engineering
 
-> **Last updated:** 2026-07-31
+> **Last updated:** 2026-08-02
 >
 > **Purpose:**
 >
@@ -35,17 +35,17 @@ It does not claim production deployment, Kubernetes adoption, cloud execution, c
 
 The supplied Git evidence identifies changes in:
 
+- `README.md`;
+- `context/DEPLOY_CONTEXT.md`;
 - `context/PROJECT_CONTEXT.md`;
 - `context/QA_CONTEXT.md`;
 - `project-tree.sh`;
-- `project-tree.txt`;
 - `scripts/context-deploy.sh`;
 - `scripts/context-upgrade.sh`;
 - `scripts/documentation-deploy.sh`;
-- `scripts/documentation-upgrade.sh`;
-- `scripts/qa-check.sh`.
+- `scripts/documentation-upgrade.sh`.
 
-The documentation deployment completed for `dp-api` and generated `documentation-package.zip`. The package includes rendered `SYS_PROMPT.md`, protected `FORMAT_CONTEXT.md`, authorized documentation paths, retrieved context, retrieved documentation and Git evidence.
+The documentation deployment completed for `dp-api` and generated `documentation-package.zip`. The package includes rendered `SYS_PROMPT.md`, protected `FORMAT_CONTEXT.md`, authorized documentation paths, retrieved context, retrieved documentation and Git evidence. The project resolves through the brand-aware container path `/suite/dp/DP-API`.
 
 No QA results file was supplied. Therefore, test execution, coverage, static analysis, migrations and deployment completion remain unverified.
 
@@ -56,6 +56,7 @@ No QA results file was supplied. Therefore, test execution, coverage, static ana
 - **Documentation workflow:** maintains complete authorized Markdown documentation replacements.
 - **Protected contracts:** `SYS_PROMPT.md` and `FORMAT_CONTEXT.md` guide generation but are not upgrade outputs.
 - **Authorized paths:** upgrades may affect only existing files explicitly included in the package allowlist.
+- **Single backup root:** successful context and documentation upgrades use `SBM-SUITE/context/backup/`.
 - **Atomic replacement:** validated files are backed up and replaced as one controlled operation.
 - **Evidence-first generation:** unsupported claims are omitted rather than inferred.
 
@@ -85,7 +86,7 @@ Developer change
 
 | Source | Target | Contract | Data | Authentication | Purpose | Status |
 |---|---|---|---|---|---|---|
-| Git repository | Deploy workflow | Repository paths and workflow request | Diff, changed files, log, QA and tree evidence | Local workflow access | Build evidence package | active |
+| Git repository | Deploy workflow | Repository paths and workflow request | Diff, changed files, log, QA and global tree evidence | Local workflow access | Build evidence package | active |
 | Documentation deploy | Qdrant | Documentation indexing contract | Markdown chunks | Internal service access | Retrieve relevant documentation | active |
 | Context deploy | Qdrant | Context indexing contract | Context chunks | Internal service access | Retrieve relevant context | active |
 | Upgrade workflow | Documentation root | Manifest, hashes and authorized paths | Complete Markdown replacements | Local workflow access | Apply validated documentation updates | active |
@@ -109,7 +110,7 @@ Exact backend and Qdrant ports are not established by the supplied package and r
 
 | Step | Component | Input | Action | Output | Validation |
 |---:|---|---|---|---|---|
-| 1 | Git evidence collector | Repository | Read changed files, diff, log, QA and optional project tree | Evidence files | Safe relative paths and file-size limits |
+| 1 | Git evidence collector | Repository | Read changed files, diff, log, QA and the suite-global project tree | Evidence files | Safe relative paths, excluded environment files and file-size limits |
 | 2 | Documentation indexer | Authorized Markdown | Split and index documentation | `sbm_documentation` chunks | At least one indexable source |
 | 3 | Retrieval service | Change query | Retrieve documentation and context chunks | Retrieved evidence | Project and active-state filters |
 | 4 | Documentation exporter | Contracts and evidence | Render the project prompt and build package | `documentation-package.zip` | No unresolved template token |
@@ -132,18 +133,21 @@ Exact backend and Qdrant ports are not established by the supplied package and r
 
 ## 8. Configuration
 
-The documentation workflow requires configured absolute directories for:
+The project scripts read `SBM_SUITE_ROOT` and `AI_ASSISTANT_URL` from the project-local `.env.dev`. The backend uses these mounted paths:
 
-- documentation source root;
-- deployment output;
-- upgrade input;
-- upgrade backup;
-- `SYS_PROMPT.md`;
-- `FORMAT_CONTEXT.md`.
+```text
+CONTEXT_UPGRADE_PROJECT_ROOT=/suite
+CONTEXT_UPGRADE_SUITE_CONTEXT_ROOT=/suite/context
+CONTEXT_UPGRADE_INPUT_ROOT=/suite/context/input
+CONTEXT_UPGRADE_BACKUP_ROOT=/suite/context/backup
+DOCUMENTATION_UPGRADE_DOCUMENTATION_ROOT=/suite/context/documentation
+DOCUMENTATION_UPGRADE_INPUT_ROOT=/suite/context/documentation/input
+DOCUMENTATION_UPGRADE_BACKUP_ROOT=/suite/context/backup
+```
 
 The deployment package must render every project-name placeholder before ZIP creation. It must contain no unresolved template tokens.
 
-Secret values and credentials must remain outside documentation and generated ZIP contents.
+Secret values, credentials and `.env` files must remain outside documentation and generated ZIP contents.
 
 ## 9. Security
 
@@ -152,7 +156,7 @@ Secret values and credentials must remain outside documentation and generated ZI
 - Restrict replacements to existing authorized Markdown files.
 - Protect `SYS_PROMPT.md` and `FORMAT_CONTEXT.md` from automated documentation upgrade.
 - Validate SHA-256 hashes against the exact final file bytes.
-- Create a backup before replacement.
+- Create exactly one timestamped backup below `SBM-SUITE/context/backup/` before replacement.
 - Roll back already replaced files when an application failure occurs.
 - Do not package credentials, tokens, `.env` files or secret values.
 
@@ -163,8 +167,8 @@ Validated by the supplied workflow response:
 - project: `dp-api`;
 - workflow: `documentation-deploy`;
 - status: `completed`;
-- indexed documentation sources: `24`;
-- indexed chunks: `3262`;
+- indexed documentation sources: `28`;
+- indexed chunks: `3343`;
 - collection: `sbm_documentation`;
 - deployment errors: none reported.
 
@@ -180,6 +184,7 @@ QA evidence not supplied.
 - Exact runtime ports for the documentation backend and Qdrant were not established by this package.
 - Notion synchronization remains planned downstream work.
 - The workflow remains manually initiated.
+- The supplied package contains historical documentation backup artifacts as retrieval evidence; only files below `documentation/pages/` are valid replacement targets.
 
 ## 12. Roadmap
 
@@ -194,10 +199,10 @@ QA evidence not supplied.
 
 | Page | Path | Relationship |
 |---|---|---|
-| AI Engineering | `SBM-SUITE/context/documentation/🤖 AI Architect Roadmap/🤖AI-Engineering 3a50bde8acd580fd84dbce95d8244e8d.md` | Defines AI, RAG and Tool architecture |
-| QA and Testing | `SBM-SUITE/context/documentation/🤖 AI Architect Roadmap/🧪QA & Testing 3a50bde8acd580028bb1ffa68930e538.md` | Defines QA strategy and evidence requirements |
-| Security and DevSecOps | `SBM-SUITE/context/documentation/🤖 AI Architect Roadmap/🔐 Security & DevSecOps 3a30bde8acd580b3abddca1cf6ff5ec9.md` | Defines security controls and risk handling |
-| Observability and Monitoring | `SBM-SUITE/context/documentation/🤖 AI Architect Roadmap/📊 Observability & Monitoring 3a30bde8acd580d99985d1f851394d0c.md` | Defines operational telemetry goals |
+| AI Engineering | `SBM-SUITE/context/documentation/pages/🤖 AI Architect Roadmap/🤖AI-Engineering 3a50bde8acd580fd84dbce95d8244e8d.md` | Defines AI, RAG and Tool architecture |
+| QA and Testing | `SBM-SUITE/context/documentation/pages/🤖 AI Architect Roadmap/🧪QA & Testing 3a50bde8acd580028bb1ffa68930e538.md` | Defines QA strategy and evidence requirements |
+| Security and DevSecOps | `SBM-SUITE/context/documentation/pages/🤖 AI Architect Roadmap/🔐 Security & DevSecOps 3a30bde8acd580b3abddca1cf6ff5ec9.md` | Defines security controls and risk handling |
+| Observability and Monitoring | `SBM-SUITE/context/documentation/pages/🤖 AI Architect Roadmap/📊 Observability & Monitoring 3a30bde8acd580d99985d1f851394d0c.md` | Defines operational telemetry goals |
 
 ## 14. Subpages
 

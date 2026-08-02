@@ -37,6 +37,9 @@
 28. Output paths must be exact, repository-relative, unique and free of `..`, absolute paths and symlinks.
 29. Every output file except `manifest.json` requires a SHA-256 hash matching its final ZIP content.
 30. Any global validation failure must prevent context replacement.
+31. Project repositories use `SBM-SUITE/<brand>/<project>/`; the current canonical paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`.
+32. Container project roots use `/suite/<brand>/<project>` with the same brand and project segments.
+33. All workflow backups are stored below `SBM-SUITE/context/backup/`; no workflow may use or create a pluralized or workflow-local backup directory.
 
 ---
 
@@ -579,7 +582,7 @@ Rules:
 Required path pattern:
 
 ```text
-SBM-SUITE/<project>/context/PROJECT_CONTEXT.md
+SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md
 ```
 
 Required structure:
@@ -641,7 +644,7 @@ Rules:
 Required path pattern:
 
 ```text
-SBM-SUITE/<project>/context/QA_CONTEXT.md
+SBM-SUITE/<brand>/<project>/context/QA_CONTEXT.md
 ```
 
 Required structure:
@@ -726,7 +729,7 @@ Rules:
 Required path pattern:
 
 ```text
-SBM-SUITE/<project>/context/DEPLOY_CONTEXT.md
+SBM-SUITE/<brand>/<project>/context/DEPLOY_CONTEXT.md
 ```
 
 Required structure:
@@ -769,32 +772,32 @@ Rules:
 
 ## 13. Project and suite `README.md`
 
-Required structure:
-
-```text
-# Project or suite name
-
-## Overview
-## Purpose
-## Architecture
-## Requirements
-## Configuration
-## Installation
-## Runtime
-## Usage
-## API or interfaces
-## Development
-## Validation
-## Security
-## Known limitations
-## Related documentation
-```
+README headings are repository-owned.
 
 Rules:
 
-- Describe stable user-facing behavior.
-- Exclude temporary notes and chat history.
-- Use repository-relative documentation paths.
+1. A README patch may target only an H1 or H2 heading that already exists exactly in the target README.
+2. Preserve the complete existing H1/H2 heading sequence.
+3. Do not add, remove, rename, reorder or duplicate README headings through `context-upgrade`.
+4. Describe stable user-facing behavior only.
+5. Exclude temporary notes, implementation transcripts and chat history.
+6. Use repository-relative documentation paths.
+7. Project READMEs list relevant reusable services, `.sh` scripts, models, reusable functional modules, shared utilities and public technical components.
+8. Update a project README whenever one of those reusable elements is added, removed, renamed, moved or changed significantly.
+9. Keep the global README general: do not inventory every internal service, model or script.
+10. Update the global README only for structural, architectural or suite-level functional changes, shared behavior or global workflow changes.
+11. After applying a README patch, the backend must validate that the final H1/H2 heading sequence is identical to the original target README heading sequence.
+
+Every project README must contain this exact existing section and table header:
+
+```text
+## Reusable components
+
+| File name | Path | Description |
+|---|---|---|
+```
+
+`## Reusable components` is mandatory for project READMEs. Other README headings may differ between repositories.
 
 ---
 
@@ -803,8 +806,8 @@ Rules:
 Allowed path patterns:
 
 ```text
-SBM-SUITE/context/documentation/<page>/<page>.md
-SBM-SUITE/context/documentation/<page>/subpages/<subpage>.md
+SBM-SUITE/context/documentation/pages/<page>/<page>.md
+SBM-SUITE/context/documentation/pages/<page>/subpages/<subpage>.md
 ```
 
 Rules:
@@ -894,7 +897,7 @@ Every context export and upgrade workflow must:
 39. Require every patch `target_file` to match its filename mapping exactly.
 40. Require `operations` to be a non-empty JSON array.
 41. Allow only `replace_section` and `append_to_section`.
-42. Require every operation heading to match an exact target heading defined in this contract.
+42. Require every context operation heading to match an exact target heading defined in this contract; require every README operation heading to match an exact existing heading in the target README.
 43. Require `replace_section` content to begin with the exact target heading.
 44. Reject operation content containing another same-level heading.
 45. Reject duplicate operations for the same target file and heading.
@@ -910,6 +913,11 @@ Every context export and upgrade workflow must:
 55. Create backups only after ZIP, manifest, hash, patch and staged-document validation succeeds.
 56. Replace targets atomically and roll back every replacement if any operation fails.
 57. Remove the input ZIP only after the complete upgrade succeeds.
+58. Generate exactly one backup directory for each successful `context-upgrade` at `SBM-SUITE/context/backup/<timestamp>_<project>/`.
+59. Store original files, `EXECUTIVE_README.md`, `COMMIT_MESSAGE.md` and `BACKUP_MANIFEST.json` in that backup directory.
+60. Require `BACKUP_MANIFEST.json` to record `project_name`, `workflow`, `generated_at`, `motivo` and every backed-up file with its original path, backup-relative path and SHA-256 hash.
+61. Reject a backup manifest when `workflow` is not `context-upgrade`, a required field is absent, a path escapes the backup directory, or a recorded hash does not match the backed-up bytes.
+62. When evidence shows changes to services, `.sh` scripts, models, structure, runtime, configuration or reusable components, require the applicable project-context and project-README patches; also apply every global synchronization rule triggered by the change.
 
 
 ### Patch archive contract
@@ -939,26 +947,26 @@ patches/decisions-context.json
 → SBM-SUITE/context/DECISIONS_CONTEXT.md
 
 patches/global-readme.json
-→ SBM-SUITE/README.md
+→ SBM-SUITE/context/README.md
 
 patches/project-context.json
-→ SBM-SUITE/<project>/context/PROJECT_CONTEXT.md
+→ SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md
 
 patches/project-qa-context.json
-→ SBM-SUITE/<project>/context/QA_CONTEXT.md
+→ SBM-SUITE/<brand>/<project>/context/QA_CONTEXT.md
 
 patches/project-deploy-context.json
-→ SBM-SUITE/<project>/context/DEPLOY_CONTEXT.md
+→ SBM-SUITE/<brand>/<project>/context/DEPLOY_CONTEXT.md
 
 patches/project-readme.json
-→ SBM-SUITE/<project>/README.md
+→ SBM-SUITE/<brand>/<project>/README.md
 ```
 
 Every patch file must use this JSON structure:
 
 ```json
 {
-  "target_file": "SBM-SUITE/<project>/context/PROJECT_CONTEXT.md",
+  "target_file": "SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md",
   "operations": [
     {
       "operation": "replace_section",
@@ -968,6 +976,38 @@ Every patch file must use this JSON structure:
   ]
 }
 ```
+
+### Backup contract
+
+Every successful `context-upgrade` must create:
+
+```text
+SBM-SUITE/context/backup/<timestamp>_<project>/
+├── EXECUTIVE_README.md
+├── COMMIT_MESSAGE.md
+├── BACKUP_MANIFEST.json
+└── <original files preserved under unambiguous backup-relative paths>
+```
+
+Minimum manifest structure:
+
+```json
+{
+  "project_name": "<project>",
+  "workflow": "context-upgrade",
+  "generated_at": "<timestamp>",
+  "motivo": "<reason for the upgrade>",
+  "backed_up_files": [
+    {
+      "original_path": "SBM-SUITE/<brand>/<project>/README.md",
+      "backup_path": "previous/SBM-SUITE/<brand>/<project>/README.md",
+      "sha256": "<SHA-256>"
+    }
+  ]
+}
+```
+
+The backup must contain every original file that will be replaced. The recorded hash is calculated from the exact backed-up bytes. `original_path` and `backup_path` must be repository-relative and must not contain absolute host or container paths. `SBM-SUITE/context/backup/` is the only authorized backup root.
 
 ### Output manifest contract
 

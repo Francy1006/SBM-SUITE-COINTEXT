@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-08-02
 >
 > **Purpose**
 >
@@ -35,12 +35,6 @@ DP-API
 SBM-API
 → internal platform API
 
-SBM-DB
-→ PostgreSQL, Flyway and DBML source of truth
-
-SBM-MANAGER
-→ enterprise frontend
-
 sbm-ai-assistant
 → AI orchestration, embeddings, Qdrant, RAG, context and documentation processing
 
@@ -52,9 +46,9 @@ SBM-SUITE/context
 
 | ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---|---:|---|---|---|
-| OBJ-CTX-001 | SBM-SUITE | Validate and stabilize the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/AI Architect Roadmap/`, `context/documentation/SBM-Suite/` |
-| OBJ-DOC-001 | SBM-SUITE | Implement the manual documentation deploy and upgrade workflow with dedicated RAG and Qdrant collection | pending | 4 |  | FEATURE-adds-documentation-workflow | `context/documentation/AI Architect Roadmap/`, `context/documentation/Roadmap/`, `context/documentation/SBM-Suite/` |
-| OBJ-QA-001 | DP-API | Define and implement the complete QA procedure and synchronized project and global QA contexts | active | 5 |  | FEATURE-implements-qa-procedure | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
+| OBJ-CTX-001 | SBM-SUITE | Validate and stabilize the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/SBM-Suite/` |
+| OBJ-DOC-001 | SBM-SUITE | Implement the manual documentation deploy and upgrade workflow with dedicated RAG and Qdrant collection | pending | 4 |  | FEATURE-adds-documentation-workflow | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/Roadmap/`, `context/documentation/pages/SBM-Suite/` |
+| OBJ-QA-001 | DP-API | Define and implement the complete QA procedure and synchronized project and global QA contexts | active | 5 |  | FEATURE-implements-qa-procedure | `context/documentation/pages/QA & Testing/`, `context/documentation/pages/Development Roadmap/` |
 
 Rules:
 
@@ -71,20 +65,18 @@ Rules:
 |---|---|---|---|
 | DP-API | Client-facing business operations | Products, materials, services, catalogs, tickets, providers, pricing, branches and other client domains | Project code, project contexts and canonical APIs |
 | SBM-API | Internal platform operations | Internal administration, franchise, fiscal, inventory, calculation, configuration and platform services | Project code and project contexts |
-| SBM-DB | Physical data model | PostgreSQL schemas, constraints, triggers, functions, reference data, Flyway and DBML | Database repository |
-| SBM-MANAGER | Enterprise frontend | Administrative and operational user interface | Frontend repository |
 | sbm-ai-assistant | AI and knowledge orchestration | Embeddings, Qdrant, RAG, Slack, context export/upgrade and future documentation workflows | AI repository and indexed Git Markdown |
 | SBM-SUITE/context | Global governance | Cross-project context, architecture, business, QA, security, data, decisions and workflow contracts | Git Markdown |
+
+Canonical project roots are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Their mounted container roots are `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`.
 
 ## 5. Project objective summaries
 
 | Project | Purpose | Active objective | Pending objectives | Branch | Main context | QA context | Documentation |
 |---|---|---|---|---|---|---|---|
-| DP-API | Client-facing business API | Define and implement the complete QA procedure | Dedicated Service app; Material consumer migration; duplicate Product endpoint retirement | `FEATURE-implements-qa-procedure` | `DP-API/context/PROJECT_CONTEXT.md` | `DP-API/context/QA_CONTEXT.md` | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
-| SBM-API | Internal platform API | Not defined | Not defined | N/A | `SBM-API/context/PROJECT_CONTEXT.md` | `SBM-API/context/QA_CONTEXT.md` | To be mapped |
-| SBM-DB | Database source of truth | Not defined | Not defined | N/A | `SBM-DB/context/PROJECT_CONTEXT.md` | `SBM-DB/context/QA_CONTEXT.md` | To be mapped |
-| SBM-MANAGER | Enterprise frontend | Not defined | Not defined | N/A | `SBM-MANAGER/context/PROJECT_CONTEXT.md` | `SBM-MANAGER/context/QA_CONTEXT.md` | To be mapped |
-| sbm-ai-assistant | AI orchestration and RAG | Support expanded context governance and project-tree evidence | Add documentation export, upgrade and dedicated collection | `FEATURE-expands-context-governance` | `sbm-ai-assistant/context/PROJECT_CONTEXT.md` | `sbm-ai-assistant/context/QA_CONTEXT.md` | `context/documentation/AI Engineering/`, `context/documentation/SBM-Suite/` |
+| DP-API | Client-facing business API | Define and implement the complete QA procedure | Dedicated Service app; Material consumer migration; duplicate Product endpoint retirement | `FEATURE-implements-qa-procedure` | `dp/DP-API/context/PROJECT_CONTEXT.md` | `dp/DP-API/context/QA_CONTEXT.md` | `context/documentation/pages/QA & Testing/`, `context/documentation/pages/Development Roadmap/` |
+| SBM-API | Internal platform API | Not defined | Not defined | N/A | `sbm/SBM-API/context/PROJECT_CONTEXT.md` | `sbm/SBM-API/context/QA_CONTEXT.md` | To be mapped |
+| sbm-ai-assistant | AI orchestration and RAG | Support expanded context governance and project-tree evidence | Add documentation export, upgrade and dedicated collection | `FEATURE-expands-context-governance` | `sbm/sbm-ai-assistant/context/PROJECT_CONTEXT.md` | `sbm/sbm-ai-assistant/context/QA_CONTEXT.md` | `context/documentation/pages/AI Engineering/`, `context/documentation/pages/SBM-Suite/` |
 | SBM-SUITE | Global governance and orchestration | Implement expanded context governance | Implement documentation workflow | `FEATURE-expands-context-governance` | `context/PROJECT_CONTEXT.md` | `context/QA_CONTEXT.md` | `context/documentation/` |
 
 ## 6. Global architecture
@@ -197,10 +189,13 @@ qa-check.sh
 → execute tests, coverage and SonarQube
 
 context-deploy.sh
-→ clean context/input and context/output
-→ execute project-tree.sh
-→ collect Git and QA evidence
-→ require project-tree.txt
+→ read SBM_SUITE_ROOT from the current project's .env.dev without packaging its values
+→ use SBM-SUITE/context/SYS_PROMPT.md and SBM-SUITE/context/FORMAT_CONTEXT.md
+→ clean SBM-SUITE/context/input and SBM-SUITE/context/output
+→ execute SBM-SUITE/context/project-tree.sh
+→ require SBM-SUITE/context/project-tree.txt
+→ collect Git and QA evidence from the current project
+→ call POST /contexts/export with project_root=/suite/<brand>/<project>
 → index authorized contexts in sbm_contexts
 → retrieve relevant chunks
 → generate context-package.zip
@@ -241,7 +236,9 @@ context-upgrade.zip
 → require exactly one context-upgrade.zip
 → validate manifest, paths, hashes and patch structure
 → validate response workflow, project, updated files and backup path
-→ create timestamped context backup
+→ create context/backup/<timestamp>_<project>/
+→ preserve original files plus EXECUTIVE_README.md and COMMIT_MESSAGE.md
+→ write BACKUP_MANIFEST.json with project, workflow, time, motivo, paths and SHA-256 hashes
 → apply authorized section patches atomically
 → print proposed commit message
 → remove input only after complete success
@@ -257,11 +254,11 @@ context/documentation/
 ├── SYS_PROMPT.md
 ├── input/
 ├── output/
-├── backup/
-└── <page>/
-    ├── <page>.md
-    └── subpages/
-        └── <subpage>.md
+└── pages/
+    └── <page>/
+        ├── <page>.md
+        └── subpages/
+            └── <subpage>.md
 ```
 
 Manual workflow:
@@ -276,7 +273,7 @@ validated context upgrade
 → ChatGPT returns documentation-upgrade.zip
 → documentation-upgrade.sh
 → validate authorized existing pages and format
-→ create timestamped documentation backup
+→ create the timestamped documentation backup under context/backup
 → replace only authorized Markdown
 → print proposed commit message
 ```
@@ -290,6 +287,8 @@ Rules:
 - structural changes require manual updates to the page, documentation format and documentation system prompt;
 - context and documentation upgrades remain separate;
 - later synchronization with Notion may become bidirectional.
+- `SBM-SUITE/context/backup/` is the only backup root for both workflows;
+- pluralized and workflow-local backup directories must never be used or recreated.
 
 ## 11. Current implementation status
 
@@ -419,6 +418,8 @@ After changes:
 - report database and migration impact;
 - report remaining risks;
 - update required project and global contexts;
+- update the project README when a reusable service, `.sh` script, model, reusable module, shared utility or public technical component is added, removed, renamed, moved or changed significantly;
+- keep the global `context/README.md` general and update it only for suite-level structure, architecture, shared functionality or global workflows;
 - run documentation workflow when objectives, architecture, structure, technology or roadmap state changed;
 - print the proposed commit message from the final upgrade.
 

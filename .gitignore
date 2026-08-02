@@ -1,9 +1,11 @@
-context/input/*
-!context/input/.gitkeep
+input/*
+!input/.gitkeep
 
-context/output/*
-!context/output/.gitkeep
+output/*
+!output/.gitkeep
 
+backup/*
+!backup/.gitkeep
 
 documentation/input/*
 !documentation/input/.gitkeep
@@ -11,7 +13,7 @@ documentation/input/*
 documentation/output/*
 !documentation/output/.gitkeep
 
+documentation/backup/*
+!documentation/backup/.gitkeep
 
-
-output/context-export-response.json
-
+project-tree.txt

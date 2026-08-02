@@ -442,8 +442,8 @@ Relevant documentation domains include:
 Paths must use:
 
 ```text
-SBM-SUITE/context/documentation/<page>/<page>.md
-SBM-SUITE/context/documentation/<page>/subpages/<subpage>.md
+SBM-SUITE/context/documentation/pages/<page>/<page>.md
+SBM-SUITE/context/documentation/pages/<page>/subpages/<subpage>.md
 ```
 
 Specific page paths will be added after the documentation structure is finalized.
