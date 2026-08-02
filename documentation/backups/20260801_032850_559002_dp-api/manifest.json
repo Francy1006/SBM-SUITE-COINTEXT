@@ -1,0 +1,45 @@
+{
+  "project_name": "dp-api",
+  "workflow": "documentation-upgrade",
+  "execution_mode": "evidence",
+  "user_prompt_file": null,
+  "output_filename": "documentation-upgrade.zip",
+  "documentation_root": "documentation",
+  "allowed_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "manifest.json",
+    "documentation/🤖 AI Architect Roadmap/☸️ DevOps & Platform Engineering 3a50bde8acd580c980d3c690e3860045.md"
+  ],
+  "updated_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "documentation/🤖 AI Architect Roadmap/☸️ DevOps & Platform Engineering 3a50bde8acd580c980d3c690e3860045.md"
+  ],
+  "generated_at": "2026-08-01T03:22:31.925416+00:00",
+  "content_hashes": {
+    "documentation/🤖 AI Architect Roadmap/☸️ DevOps & Platform Engineering 3a50bde8acd580c980d3c690e3860045.md": "58db86a0f165b0b74538c1e564930ff6a65708f2ad1d90176ed80622e05fb018",
+    "EXECUTIVE_README.md": "9c9dca8d428cdab64d6b398cacd409e96defe6a9100957e0aa2d112046c95a42",
+    "COMMIT_MESSAGE.md": "68961aabf9d0cd760fcfdc57ec660b52fdcae4dde9f702d5d2cb40a6a71b2bd6"
+  },
+  "commit": {
+    "type": "docs",
+    "scope": "devops",
+    "subject": "document validated documentation workflows",
+    "message_file": "COMMIT_MESSAGE.md"
+  },
+  "rag": {
+    "documentation_collection": "sbm_documentation",
+    "context_collection": "sbm_contexts",
+    "documentation_chunk_count": 3262,
+    "context_chunk_count": 0,
+    "retrieved_documentation_sources": [],
+    "retrieved_context_sources": []
+  },
+  "evidence": {
+    "source_manifest": "manifest.json",
+    "qa_results_file": "qa-results.md",
+    "documentation_files_file": "documentation-files.txt",
+    "project_tree_file": "project-tree.txt"
+  }
+}
