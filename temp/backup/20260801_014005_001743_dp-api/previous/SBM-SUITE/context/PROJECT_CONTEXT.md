@@ -54,7 +54,7 @@ SBM-SUITE/context
 |---|---|---|---|---:|---|---|---|
 | OBJ-CTX-001 | SBM-SUITE | Implement the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/AI Architect Roadmap/`, `context/documentation/SBM-Suite/` |
 | OBJ-DOC-001 | SBM-SUITE | Implement the manual documentation deploy and upgrade workflow with dedicated RAG and Qdrant collection | pending | 4 |  | FEATURE-adds-documentation-workflow | `context/documentation/AI Architect Roadmap/`, `context/documentation/Roadmap/`, `context/documentation/SBM-Suite/` |
-| OBJ-QA-001 | DP-API | Implement the complete QA procedure and synchronized project and global QA contexts | pending | 5 |  | FEATURE-implements-qa-procedure-context | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
+| DP-QA-001 | DP-API | Implement the complete QA procedure and synchronized project and global QA contexts | pending | 5 |  | FEATURE-implements-qa-procedure-context | `context/documentation/QA & Testing/`, `context/documentation/Development Roadmap/` |
 
 Rules:
 

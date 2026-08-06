@@ -24,7 +24,7 @@
 15. Objective, implementation, QA, business and documentation state must remain separate.
 16. Context and documentation use separate Qdrant collections.
 17. Context files reference documentation using repository-relative paths.
-18. Completed or discarded objectives are removed from current-objective tables.
+18. Completed objectives are removed from operational objective tables and appended only to `SBM-SUITE/context/COMPLETED_OBJECTIVES.md`; discarded objectives are removed from operational tables.
 19. Protected files remain read-only unless their workflow explicitly authorizes modification.
 20. Every file must preserve its declared document boundary.
 21. `FORMAT_CONTEXT.md` is the only authority for context and README structure.
@@ -37,8 +37,8 @@
 28. Output paths must be exact, repository-relative, unique and free of `..`, absolute paths and symlinks.
 29. Every output file except `manifest.json` requires a SHA-256 hash matching its final ZIP content.
 30. Any global validation failure must prevent context replacement.
-31. Project repositories use `SBM-SUITE/<brand>/<project>/`; the current canonical paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`.
-32. Container project roots use `/suite/<brand>/<project>` with the same brand and project segments.
+31. Project repositories use repository-relative paths under `SBM-SUITE/<brand>/<project>/`; the current repository paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`.
+32. Container project roots use canonical runtime paths under `/suite/<brand>/<project>` with the same brand and project segments; for DP-API, `canonical_project_path` is exactly `/suite/dp/DP-API`.
 33. All workflow backups are stored below `SBM-SUITE/context/backup/`; no workflow may use or create a pluralized or workflow-local backup directory.
 
 ---
@@ -62,33 +62,34 @@ Required structure:
 
 ## 1. Executive summary
 ## 2. Suite purpose
-## 3. Current objectives
-## 4. Projects and ownership
-## 5. Project objective summaries
-## 6. Global architecture
-## 7. Shared infrastructure
-## 8. Cross-project integrations
-## 9. Context deployment and upgrade workflow
-## 10. Documentation deployment and upgrade workflow
-## 11. Current implementation status
-## 12. Validated decisions
-## 13. Accepted risks and constraints
-## 14. Completed work
-## 15. Pending work
-## 16. Required behavior
-## 17. Historical decisions
-## 18. Related documentation
-## 19. Document boundary
+## 3. Active objectives
+## 4. Pending objectives
+## 5. Projects and ownership
+## 6. Project objective summaries
+## 7. Global architecture
+## 8. Shared infrastructure
+## 9. Cross-project integrations
+## 10. Context deployment and upgrade workflow
+## 11. Documentation deployment and upgrade workflow
+## 12. Current implementation status
+## 13. Validated decisions
+## 14. Accepted risks and constraints
+## 15. Completed work
+## 16. Pending work
+## 17. Required behavior
+## 18. Historical decisions
+## 19. Related documentation
+## 20. Document boundary
 ```
 
-Required table in `## 3. Current objectives`:
+Required table in both `## 3. Active objectives` and `## 4. Pending objectives`:
 
 ```text
 | ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---|---:|---|---|---|
 ```
 
-Required table in `## 5. Project objective summaries`:
+Required table in `## 6. Project objective summaries`:
 
 ```text
 | Project | Purpose | Active objective | Pending objectives | Branch | Main context | QA context | Documentation |
@@ -97,7 +98,7 @@ Required table in `## 5. Project objective summaries`:
 
 Objective rules:
 
-- `Status`: `active` or `pending`.
+- `Status` must match the owning section: `active` in Active objectives and `pending` in Pending objectives.
 - `Priority`: integer from `0` to `5`.
 - `Target date`: optional, format `YYYY-MM-DD`.
 - `Branch`: mandatory before development begins.
@@ -106,6 +107,9 @@ Objective rules:
 - The global file stores only high-level project summaries.
 - Detailed objectives remain in the project context.
 - This context is the source for roadmap, backlog, epics and issues.
+- Objectives assigned for immediate implementation are `active`.
+- Objectives recorded for later work are `pending`.
+- Completed objectives are removed from this file and appended only to the global completed-objectives register.
 
 Branch nomenclature:
 
@@ -136,9 +140,69 @@ BUGFIX-fixes-product-price-serializer
 HOTFIX-restores-auth-token-validation
 ```
 
+
 ---
 
-## 3. Global `SUITE_CONTEXT.md`
+## 3. Global `COMPLETED_OBJECTIVES.md`
+
+Required path:
+
+```text
+SBM-SUITE/context/COMPLETED_OBJECTIVES.md
+```
+
+Required structure:
+
+```text
+# COMPLETED_OBJECTIVES.md
+
+> Last updated
+> Purpose
+> Accuracy note
+
+## 1. Completed objectives by project
+## 2. Document boundary
+```
+
+Required project grouping heading pattern:
+
+```text
+### <project>
+```
+
+Required table under each project heading:
+
+```text
+| Objective ID | Project | Objective | Final status | Priority | Branch | Started | Completed | Summary | Validation | Documentation | Proposed commit |
+|---|---|---|---|---:|---|---|---|---|---|---|---|
+```
+
+Rules:
+
+- This is the only completed-objectives file in SBM Suite.
+- Do not create project-level completed-objectives files.
+- Group completed objectives by project.
+- Append only newly completed or cancelled objectives.
+- Never include active or pending objectives.
+- Do not rewrite unrelated historical records.
+- This file is excluded from the operational development context used by Codex.
+- Allowed final statuses: `completed`, `cancelled`.
+- A completed objective requires explicit implementation evidence and successful QA evidence.
+- Objective closure must also remove the objective from both project and global operational objective sections and update both project and global QA contexts in the same upgrade.
+- `patches/completed-objectives.json` is allowed only in `implementation-closure`.
+- `patches/completed-objectives.json` must contain exactly one operation targeting `## 1. Completed objectives by project`.
+- Inspect the complete current `SBM-SUITE/context/COMPLETED_OBJECTIVES.md` source snapshot before choosing the operation, and ignore headings contained inside fenced code blocks.
+- Resolve the exact canonical project grouping heading from the Project Registry; for `dp-api`, it is `### DP-API`.
+- If the canonical project heading is absent outside fenced code blocks, use `append_to_section` and append exactly one new project heading, the exact required table header and exactly one row for the requested `objective_id`.
+- If the canonical project heading exists exactly once, use `replace_section` and return the complete current `## 1. Completed objectives by project` section, preserving all preamble text, project headings, tables and unrelated rows while adding exactly one row under that existing heading.
+- Never use `append_to_section` when the canonical project heading already exists.
+- Never use `replace_section` to create a missing canonical project heading.
+- Reject multiple canonical project heading matches, duplicate Objective IDs and duplicate project grouping headings.
+- Existing historical records may be carried unchanged inside a complete `replace_section` snapshot, but they must never be modified, reordered or removed.
+- Append exactly the requested `objective_id`; do not also copy it to `Completed work` in a project or global `PROJECT_CONTEXT.md`.
+
+
+## 4. Global `SUITE_CONTEXT.md`
 
 Required path:
 
@@ -212,7 +276,7 @@ Rules:
 
 ---
 
-## 4. Global `BUSINESS_CONTEXT.md`
+## 5. Global `BUSINESS_CONTEXT.md`
 
 Required path:
 
@@ -278,7 +342,7 @@ Rules:
 
 ---
 
-## 5. Global `QA_CONTEXT.md`
+## 6. Global `QA_CONTEXT.md`
 
 Required path:
 
@@ -346,11 +410,13 @@ Rules:
 - `context-upgrade` updates project and global QA contexts.
 - New, removed or changed tests update both QA contexts.
 - Global QA stores summaries; project QA stores detail.
-- Never invent tests, dates, coverage or SonarQube results.
+- In planning mode, proposed tests may be listed only as pending QA work without execution date or result.
+- Never invent executed tests, dates, coverage or SonarQube results.
+- In closure mode, planned QA entries are reaffirmed or corrected using actual evidence.
 
 ---
 
-## 6. Global `SECURITY_CONTEXT.md`
+## 7. Global `SECURITY_CONTEXT.md`
 
 Required path:
 
@@ -405,7 +471,7 @@ Rules:
 
 ---
 
-## 7. Global `DATA_CONTEXT.md`
+## 8. Global `DATA_CONTEXT.md`
 
 Required path:
 
@@ -462,7 +528,7 @@ Rules:
 
 ---
 
-## 8. Global `DECISIONS_CONTEXT.md`
+## 9. Global `DECISIONS_CONTEXT.md`
 
 Required path:
 
@@ -513,7 +579,7 @@ Rules:
 
 ---
 
-## 9. Global `SYS_PROMPT.md`
+## 10. Global `SYS_PROMPT.md`
 
 Required path:
 
@@ -531,6 +597,7 @@ Required structure:
 ## Required inputs
 ## Input meaning
 ## Execution modes
+## Development lifecycle phases
 ## Evidence priority
 ## Evidence reliability and hallucination controls
 ## Allowed target files
@@ -542,6 +609,7 @@ Required structure:
 ## Patch filenames
 ## Global synchronization rules
 ## Project context rules
+## Completed objectives rules
 ## Suite context rules
 ## Business context rules
 ## QA context rules
@@ -568,6 +636,8 @@ Rules:
 - Update suite, business, security, data and decisions contexts when their trigger rules apply.
 - Explicitly list allowed and protected paths.
 - Require a deterministic generation sequence before producing any patch.
+- Require `context-deploy.sh` to resolve every SYS_PROMPT template variable before delivery.
+- Require complete exported source snapshots to be read before any `replace_section` operation.
 - Separate input evidence from output artifacts explicitly.
 - Require the output manifest to be created from the final valid ZIP contents only.
 - Reject unsupported facts, inferred completion, invented QA, invented migrations and invented deployment status.
@@ -577,12 +647,12 @@ Rules:
 
 ---
 
-## 10. Project `context/PROJECT_CONTEXT.md`
+## 11. Project `context/PROJECT_CONTEXT.md`
 
 Required path pattern:
 
 ```text
-SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md
+SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
 ```
 
 Required structure:
@@ -596,30 +666,31 @@ Required structure:
 
 ## 1. Executive summary
 ## 2. Project purpose
-## 3. Current objectives
-## 4. Scope and ownership
-## 5. Architecture
-## 6. Runtime and containers
-## 7. Configuration
-## 8. Modules
-## 9. Data model ownership
-## 10. API surface
-## 11. Authentication and authorization
-## 12. Integrations
-## 13. Implemented behavior
-## 14. Validation evidence
-## 15. Database and migration impact
-## 16. Security considerations
-## 17. Accepted risks and constraints
-## 18. Completed work
-## 19. Pending work
-## 20. Required behavior
-## 21. Historical decisions
-## 22. Related documentation
-## 23. Document boundary
+## 3. Active objectives
+## 4. Pending objectives
+## 5. Scope and ownership
+## 6. Architecture
+## 7. Runtime and containers
+## 8. Configuration
+## 9. Modules
+## 10. Data model ownership
+## 11. API surface
+## 12. Authentication and authorization
+## 13. Integrations
+## 14. Implemented behavior
+## 15. Validation evidence
+## 16. Database and migration impact
+## 17. Security considerations
+## 18. Accepted risks and constraints
+## 19. Completed work
+## 20. Pending work
+## 21. Required behavior
+## 22. Historical decisions
+## 23. Related documentation
+## 24. Document boundary
 ```
 
-Required table in `## 3. Current objectives`:
+Required table in both `## 3. Active objectives` and `## 4. Pending objectives`:
 
 ```text
 | ID | Objective | Status | Priority | Target date | Branch | Documentation |
@@ -629,22 +700,23 @@ Required table in `## 3. Current objectives`:
 Rules:
 
 - Multiple objectives are allowed.
-- `Status`: `active` or `pending`.
+- `Status` must match the owning section: `active` in Active objectives and `pending` in Pending objectives.
 - `Priority`: integer from `0` to `5`.
 - `Target date`: optional.
 - Branch is mandatory before implementation.
 - Branch nomenclature follows section 2.
 - Completed or discarded objectives are removed.
+- Completed objectives are appended only to the global `COMPLETED_OBJECTIVES.md`.
 - Every objective change updates the global project context.
 
 ---
 
-## 11. Project `context/QA_CONTEXT.md`
+## 12. Project `context/QA_CONTEXT.md`
 
 Required path pattern:
 
 ```text
-SBM-SUITE/<brand>/<project>/context/QA_CONTEXT.md
+SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
 ```
 
 Required structure:
@@ -717,19 +789,19 @@ deployment
 
 Rules:
 
-- Use the risk scale from section 5.
+- Use the risk scale from section 6.
 - Every result requires evidence.
 - New, removed or modified tests update project and global QA contexts.
 - Preserve relevant historical evidence.
 
 ---
 
-## 12. Project `context/DEPLOY_CONTEXT.md`
+## 13. Project `context/DEPLOY_CONTEXT.md`
 
 Required path pattern:
 
 ```text
-SBM-SUITE/<brand>/<project>/context/DEPLOY_CONTEXT.md
+SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
 ```
 
 Required structure:
@@ -741,25 +813,16 @@ Required structure:
 > Purpose
 > Accuracy note
 
-## 1. Deployment overview
-## 2. Environments
-## 3. Runtime topology
-## 4. Containers and services
-## 5. Networks and ports
-## 6. Configuration and secrets
-## 7. Build process
-## 8. Deployment process
-## 9. Database deployment
-## 10. Health checks
-## 11. Observability
-## 12. Rollback
-## 13. Security requirements
-## 14. Operational procedures
-## 15. Current deployment status
-## 16. Known deployment risks
-## 17. Pending deployment work
-## 18. Related documentation
-## 19. Document boundary
+## 1. Scope and ownership
+## 2. Required configuration
+## 3. Canonical paths
+## 4. Context deploy workflow
+## 5. Manual review stage
+## 6. Context upgrade workflow
+## 7. Atomicity and cleanup
+## 8. Rollback
+## 9. Validation performed
+## 10. Current limitations
 ```
 
 Rules:
@@ -770,16 +833,65 @@ Rules:
 
 ---
 
-## 13. Project and suite `README.md`
+## 14. Project and suite `README.md`
 
 README headings are repository-owned.
+
+Required current global README heading sequence:
+
+```text
+# SBM Suite context
+## Overview
+## Purpose
+## Architecture
+## Requirements
+## Configuration
+## Installation
+## Runtime
+## Usage
+## API or interfaces
+## Development
+## Validation
+## Security
+## Known limitations
+## Related documentation
+```
+
+Required current DP-API README heading sequence:
+
+```text
+# DP-API
+## Role within SBM Suite
+## Project status
+## Technology stack
+## Current app ownership
+## Architecture
+## Database ownership
+## Requirements
+## Environment configuration
+## Build and start
+## Runtime operations
+## Local URLs
+## Main REST resources
+## Usage examples
+## Authentication and authorization
+## Administration
+## Reusable components
+## QA and code quality
+## SonarQube configuration
+## AI integration
+## Security
+## Project documentation
+## License
+## Context lifecycle
+```
 
 Rules:
 
 1. A README patch may target only an H1 or H2 heading that already exists exactly in the target README.
 2. Preserve the complete existing H1/H2 heading sequence.
 3. Do not add, remove, rename, reorder or duplicate README headings through `context-upgrade`.
-4. Describe stable user-facing behavior only.
+4. During `planning-activation`, describe an objective only as planned or in development; during `implementation-closure`, describe stable final behavior only.
 5. Exclude temporary notes, implementation transcripts and chat history.
 6. Use repository-relative documentation paths.
 7. Project READMEs list relevant reusable services, `.sh` scripts, models, reusable functional modules, shared utilities and public technical components.
@@ -801,7 +913,7 @@ Every project README must contain this exact existing section and table header:
 
 ---
 
-## 14. Documentation references
+## 15. Documentation references
 
 Allowed path patterns:
 
@@ -823,7 +935,7 @@ Rules:
 
 ---
 
-## 15. `FORMAT_CONTEXT.md`
+## 16. `FORMAT_CONTEXT.md`
 
 Required structure:
 
@@ -832,26 +944,27 @@ Required structure:
 
 ## 1. Global rules
 ## 2. Global PROJECT_CONTEXT.md
-## 3. Global SUITE_CONTEXT.md
-## 4. Global BUSINESS_CONTEXT.md
-## 5. Global QA_CONTEXT.md
-## 6. Global SECURITY_CONTEXT.md
-## 7. Global DATA_CONTEXT.md
-## 8. Global DECISIONS_CONTEXT.md
-## 9. Global SYS_PROMPT.md
-## 10. Project context/PROJECT_CONTEXT.md
-## 11. Project context/QA_CONTEXT.md
-## 12. Project context/DEPLOY_CONTEXT.md
-## 13. Project and suite README.md
-## 14. Documentation references
-## 15. FORMAT_CONTEXT.md
-## 16. Enforcement rules
-## 17. Document boundary
+## 3. Global COMPLETED_OBJECTIVES.md
+## 4. Global SUITE_CONTEXT.md
+## 5. Global BUSINESS_CONTEXT.md
+## 6. Global QA_CONTEXT.md
+## 7. Global SECURITY_CONTEXT.md
+## 8. Global DATA_CONTEXT.md
+## 9. Global DECISIONS_CONTEXT.md
+## 10. Global SYS_PROMPT.md
+## 11. Project context/PROJECT_CONTEXT.md
+## 12. Project context/QA_CONTEXT.md
+## 13. Project context/DEPLOY_CONTEXT.md
+## 14. Project and suite README.md
+## 15. Documentation references
+## 16. FORMAT_CONTEXT.md
+## 17. Enforcement rules
+## 18. Document boundary
 ```
 
 ---
 
-## 16. Enforcement rules
+## 17. Enforcement rules
 
 Every context export and upgrade workflow must:
 
@@ -871,7 +984,7 @@ Every context export and upgrade workflow must:
 14. Update suite context for API, body, structural, technology, version and integration changes.
 15. Update business context for brand, franchise, business behavior and enabled-module changes.
 16. Update security, data and decisions contexts when their domains change.
-17. Require SHA-256 hashes for every output file.
+17. Require SHA-256 hashes for every output file except `manifest.json`.
 18. Create backups before replacement.
 19. Print the proposed commit message after context upgrade.
 20. Keep context and documentation collections separate.
@@ -904,8 +1017,8 @@ Every context export and upgrade workflow must:
 46. Require required tables to preserve exact headers and column order.
 47. Require `manifest.updated_files` to equal every physical ZIP file except `manifest.json`.
 48. Require `manifest.content_hashes` keys to equal `manifest.updated_files`.
-49. Require every `updated_files` path to appear in `allowed_files`.
-50. Forbid `manifest.json` from `updated_files` and `content_hashes`.
+49. Require every physical ZIP file, including `manifest.json`, to appear in `manifest.allowed_files`.
+50. Require `manifest.json` at the ZIP root and forbid it only from `manifest.updated_files` and `manifest.content_hashes`.
 51. Require at least one valid context or README patch.
 52. Validate all patches in memory before creating backups or modifying targets.
 53. Apply all validated patches to staged copies before replacing repository files.
@@ -918,6 +1031,34 @@ Every context export and upgrade workflow must:
 60. Require `BACKUP_MANIFEST.json` to record `project_name`, `workflow`, `generated_at`, `motivo` and every backed-up file with its original path, backup-relative path and SHA-256 hash.
 61. Reject a backup manifest when `workflow` is not `context-upgrade`, a required field is absent, a path escapes the backup directory, or a recorded hash does not match the backed-up bytes.
 62. When evidence shows changes to services, `.sh` scripts, models, structure, runtime, configuration or reusable components, require the applicable project-context and project-README patches; also apply every global synchronization rule triggered by the change.
+63. Require `planning-activation` to synchronize project and global operational objectives.
+64. Require `implementation-closure` to remove the objective from both operational contexts, append it only to global `COMPLETED_OBJECTIVES.md`, and update project and global QA contexts with actual validation evidence.
+65. Reject any project-level `COMPLETED_OBJECTIVES.md` target.
+66. Require source-manifest fields `contract_version`, `supported_patch_paths`, `canonical_project_path`, `lifecycle_phase` and `objective_id`.
+67. Accept only `planning-activation`, `implementation-progress` and `implementation-closure` as `lifecycle_phase` values.
+68. Never infer `lifecycle_phase` from `qa-results.md`, `git-diff.patch`, `changed-files.txt`, test status or RAG context.
+69. Require a non-empty `objective_id` for every lifecycle phase.
+70. Require `planning-activation` to include `USER_PROMPT.md` and prohibit `patches/completed-objectives.json`.
+71. Require `implementation-progress` to prohibit `patches/completed-objectives.json` and objective closure.
+72. Require `implementation-closure` to include `patches/completed-objectives.json`, `patches/global-project-context.json`, `patches/project-context.json`, `patches/global-qa-context.json` and `patches/project-qa-context.json`, plus implementation evidence, successful QA and explicit closure.
+73. During closure, remove only the requested `objective_id`, preserve every other objective and append exactly that ID to `COMPLETED_OBJECTIVES.md`.
+74. Require both closure QA patches to use explicit successful `qa-results.md` evidence and preserve every unrelated project summary, test row and current QA record.
+75. Require `replace_section` to return the complete section, preserve all unrelated rows and reject partial tables.
+76. Reject any patch that removes another objective, another project from global QA or an unrelated reusable component.
+77. Omit a patch when no complete target-section snapshot exists and report the omission in `EXECUTIVE_README.md`.
+78. Allow `append_to_section` for `patches/completed-objectives.json` only when the canonical project heading is absent; also allow it for `## 18. Historical decisions` in global `PROJECT_CONTEXT.md` and `## 22. Historical decisions` in project `PROJECT_CONTEXT.md`.
+79. Require `patches/completed-objectives.json` to contain exactly one operation targeting `## 1. Completed objectives by project`.
+80. Determine the canonical project heading from the complete source snapshot outside fenced code blocks and from the Project Registry.
+81. When the canonical project heading is absent, require `append_to_section` with exactly one new project heading, the exact required table header and exactly one row for `objective_id`.
+82. When the canonical project heading exists exactly once, require `replace_section` with the complete current history section, preserving every existing project heading and historical row while adding exactly one row under the existing canonical heading.
+83. Never allow `append_to_section` when the canonical project heading exists; never allow `replace_section` to create a missing canonical project heading; reject multiple canonical project heading matches.
+84. Forbid `append_to_section` for operational objectives, current QA, `SUITE_CONTEXT.md`, README files and all other current-state sections.
+85. Reject duplicate Objective IDs, duplicate project grouping headings and modifications, reordering or removal of existing `COMPLETED_OBJECTIVES.md` history.
+86. Do not copy a closed objective to `Completed work` in any `PROJECT_CONTEXT.md`.
+87. Require `canonical_project_path` to equal the canonical runtime root `/suite/dp/DP-API`; never construct runtime or repository paths from `project_name` or alter path casing.
+88. Require every project `target_file` to match its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping; never derive a `target_file` from `canonical_project_path`.
+89. Generate only patch files listed in `supported_patch_paths`.
+90. Require the output `contract_version` to equal the source manifest `contract_version`.
 
 
 ### Patch archive contract
@@ -949,29 +1090,32 @@ patches/decisions-context.json
 patches/global-readme.json
 → SBM-SUITE/context/README.md
 
+patches/completed-objectives.json
+→ SBM-SUITE/context/COMPLETED_OBJECTIVES.md
+
 patches/project-context.json
-→ SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md
+→ SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
 
 patches/project-qa-context.json
-→ SBM-SUITE/<brand>/<project>/context/QA_CONTEXT.md
+→ SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
 
 patches/project-deploy-context.json
-→ SBM-SUITE/<brand>/<project>/context/DEPLOY_CONTEXT.md
+→ SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
 
 patches/project-readme.json
-→ SBM-SUITE/<brand>/<project>/README.md
+→ SBM-SUITE/dp/DP-API/README.md
 ```
 
 Every patch file must use this JSON structure:
 
 ```json
 {
-  "target_file": "SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md",
+  "target_file": "SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md",
   "operations": [
     {
       "operation": "replace_section",
-      "heading": "## 3. Current objectives",
-      "content": "## 3. Current objectives\n\nComplete Markdown for this section."
+      "heading": "## 3. Active objectives",
+      "content": "## 3. Active objectives\n\nComplete Markdown for this section."
     }
   ]
 }
@@ -999,8 +1143,8 @@ Minimum manifest structure:
   "motivo": "<reason for the upgrade>",
   "backed_up_files": [
     {
-      "original_path": "SBM-SUITE/<brand>/<project>/README.md",
-      "backup_path": "previous/SBM-SUITE/<brand>/<project>/README.md",
+      "original_path": "SBM-SUITE/dp/DP-API/README.md",
+      "backup_path": "previous/SBM-SUITE/dp/DP-API/README.md",
       "sha256": "<SHA-256>"
     }
   ]
@@ -1012,6 +1156,28 @@ The backup must contain every original file that will be replaced. The recorded 
 ### Output manifest contract
 
 The output manifest must be generated from the final ZIP contents only.
+
+Required lifecycle and routing fields:
+
+```json
+{
+  "contract_version": "<source contract_version>",
+  "supported_patch_paths": [],
+  "canonical_project_path": "/suite/dp/DP-API",
+  "lifecycle_phase": "<planning-activation|implementation-progress|implementation-closure>",
+  "objective_id": "<required objective ID>"
+}
+```
+
+Mandatory ZIP manifest set contract:
+
+- `manifest.json` MUST be physically present at the ZIP root.
+- `manifest.json` MUST appear in `manifest.allowed_files`.
+- `manifest.json` MUST NOT appear in `manifest.updated_files`.
+- `manifest.json` MUST NOT appear in `manifest.content_hashes`.
+- `manifest.updated_files` MUST equal exactly the set of physical ZIP files excluding `manifest.json`.
+- The keys of `manifest.content_hashes` MUST equal exactly `manifest.updated_files`.
+- Every physical ZIP file MUST be authorized in `manifest.allowed_files`.
 
 Allowed non-patch output paths:
 
@@ -1030,15 +1196,19 @@ Rules:
 - `updated_files` contains every physical ZIP file except `manifest.json`.
 - `content_hashes` contains exactly the same paths as `updated_files`.
 - Every hash is SHA-256 of the exact final UTF-8 file content.
-- `allowed_files` contains only authorized output paths.
+- `allowed_files` contains every physical ZIP file, including `manifest.json`, and only authorized output paths.
+- `contract_version` exactly matches the source manifest value.
+- `supported_patch_paths` contains every generated patch and only paths authorized by the patch archive contract.
+- `canonical_project_path` is exactly `/suite/dp/DP-API`, the canonical runtime root; every project `target_file` independently matches its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping.
+- `lifecycle_phase` and `objective_id` satisfy the applicable lifecycle rules.
 - No output path may be absolute, duplicated, contain `..` or reference a symlink.
 - The source manifest must never be copied as the output manifest.
 
 ---
 
-## 17. Document boundary
+## 18. Document boundary
 
-This file defines context structures, synchronization rules, tables and validation contracts only.
+This file defines context structures, objective lifecycle rules, synchronization rules, tables and validation contracts only.
 
 It does not define actual:
 

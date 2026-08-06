@@ -8,7 +8,7 @@
 >
 > **Accuracy note**
 >
-> Git Markdown is the current source of truth. Qdrant is a semantic index. Planned objectives, QA results, documentation state and implemented behavior remain explicitly separated.
+> Git Markdown is the current source of truth. Qdrant is a semantic index. Active objectives, pending objectives, completed-objective history, QA results, documentation state and implemented behavior remain explicitly separated.
 
 ## 1. Executive summary
 
@@ -20,7 +20,7 @@ The current design separates:
 - QA execution from QA interpretation;
 - context workflows from documentation workflows;
 - `sbm_contexts` from `sbm_documentation`;
-- planned objectives from implemented and validated work.
+- active and pending objectives from completed-objective history and validated implementation.
 
 ## 2. Suite purpose
 
@@ -42,24 +42,35 @@ SBM-SUITE/context
 → global project, suite, business, QA, security, data and decision contexts
 ```
 
-## 3. Current objectives
+## 3. Active objectives
 
 | ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---|---:|---|---|---|
 | OBJ-CTX-001 | SBM-SUITE | Validate and stabilize the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/SBM-Suite/` |
-| OBJ-DOC-001 | SBM-SUITE | Implement the manual documentation deploy and upgrade workflow with dedicated RAG and Qdrant collection | pending | 4 |  | FEATURE-adds-documentation-workflow | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/Roadmap/`, `context/documentation/pages/SBM-Suite/` |
-| OBJ-QA-001 | DP-API | Define and implement the complete QA procedure and synchronized project and global QA contexts | active | 5 |  | FEATURE-implements-qa-procedure | `context/documentation/pages/QA & Testing/`, `context/documentation/pages/Development Roadmap/` |
 
 Rules:
 
-- statuses are limited to `active` and `pending`;
-- priorities use `0` to `5`;
-- target date is optional;
-- completed or discarded objectives are removed from this table;
-- completed evidence belongs in `Completed work`;
-- every project objective change must update this table and the project summary.
+- this section contains only objectives currently being addressed;
+- status is always `active`;
+- branch is mandatory before implementation begins;
+- every project objective change must update this section and the project summary;
+- completed objectives are removed and appended only to `context/COMPLETED_OBJECTIVES.md`.
 
-## 4. Projects and ownership
+## 4. Pending objectives
+
+| ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
+|---|---|---|---|---:|---|---|---|
+| OBJ-DOC-001 | SBM-SUITE | Implement the manual documentation deploy and upgrade workflow with dedicated RAG and Qdrant collection | pending | 4 |  | FEATURE-adds-documentation-workflow | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/Roadmap/`, `context/documentation/pages/SBM-Suite/` |
+
+Rules:
+
+- this section contains only approved objectives not yet started;
+- status is always `pending`;
+- objectives move to `Active objectives` when implementation begins;
+- completed objectives never remain here;
+- every project objective change must update this section and the project summary.
+
+## 5. Projects and ownership
 
 | Project | Ownership | Main responsibilities | Source of truth |
 |---|---|---|---|
@@ -70,16 +81,16 @@ Rules:
 
 Canonical project roots are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Their mounted container roots are `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`.
 
-## 5. Project objective summaries
+## 6. Project objective summaries
 
 | Project | Purpose | Active objective | Pending objectives | Branch | Main context | QA context | Documentation |
 |---|---|---|---|---|---|---|---|
-| DP-API | Client-facing business API | Define and implement the complete QA procedure | Dedicated Service app; Material consumer migration; duplicate Product endpoint retirement | `FEATURE-implements-qa-procedure` | `dp/DP-API/context/PROJECT_CONTEXT.md` | `dp/DP-API/context/QA_CONTEXT.md` | `context/documentation/pages/QA & Testing/`, `context/documentation/pages/Development Roadmap/` |
+| DP-API | Client-facing business API | Not defined | Dedicated Service app; Material consumer migration; duplicate Product endpoint retirement | N/A | `dp/DP-API/context/PROJECT_CONTEXT.md` | `dp/DP-API/context/QA_CONTEXT.md` | `context/documentation/pages/QA & Testing/`, `context/documentation/pages/Development Roadmap/` |
 | SBM-API | Internal platform API | Not defined | Not defined | N/A | `sbm/SBM-API/context/PROJECT_CONTEXT.md` | `sbm/SBM-API/context/QA_CONTEXT.md` | To be mapped |
 | sbm-ai-assistant | AI orchestration and RAG | Support expanded context governance and project-tree evidence | Add documentation export, upgrade and dedicated collection | `FEATURE-expands-context-governance` | `sbm/sbm-ai-assistant/context/PROJECT_CONTEXT.md` | `sbm/sbm-ai-assistant/context/QA_CONTEXT.md` | `context/documentation/pages/AI Engineering/`, `context/documentation/pages/SBM-Suite/` |
 | SBM-SUITE | Global governance and orchestration | Implement expanded context governance | Implement documentation workflow | `FEATURE-expands-context-governance` | `context/PROJECT_CONTEXT.md` | `context/QA_CONTEXT.md` | `context/documentation/` |
 
-## 6. Global architecture
+## 7. Global architecture
 
 Current context architecture:
 
@@ -124,7 +135,7 @@ qa-check.sh
 → global QA_CONTEXT summary patch
 ```
 
-## 7. Shared infrastructure
+## 8. Shared infrastructure
 
 Current shared infrastructure includes:
 
@@ -152,7 +163,7 @@ sbm_documentation
 
 `sbm_documentation` is planned and must remain separate from `sbm_contexts`.
 
-## 8. Cross-project integrations
+## 9. Cross-project integrations
 
 ```text
 DP-API
@@ -180,51 +191,58 @@ Every project `PROJECT_CONTEXT.md` update must update this global context.
 
 Every project `QA_CONTEXT.md` update must update the global `QA_CONTEXT.md` summary.
 
-## 9. Context deployment and upgrade workflow
+## 10. Context deployment and upgrade workflow
 
 ### Deployment
 
 ```text
 qa-check.sh
-→ execute tests, coverage and SonarQube
+→ execute the configured pytest and coverage workflow
+→ run SonarScanner only after successful test and coverage execution
+→ persist bounded evidence in context/qa-results.md
 
-context-deploy.sh
-→ read SBM_SUITE_ROOT from the current project's .env.dev without packaging its values
+context-deploy.sh <lifecycle_phase> <objective_id> [user_prompt]
+→ validate the explicit lifecycle phase and objective
+→ request GET /contexts/contract before cleaning exchange directories
+→ validate contract version, lifecycle phases, canonical project path and supported patches
 → use SBM-SUITE/context/SYS_PROMPT.md and SBM-SUITE/context/FORMAT_CONTEXT.md
-→ clean SBM-SUITE/context/input and SBM-SUITE/context/output
-→ execute SBM-SUITE/context/project-tree.sh
-→ require SBM-SUITE/context/project-tree.txt
-→ collect Git and QA evidence from the current project
+→ execute SBM-SUITE/context/project-tree.sh and require project-tree.txt
+→ collect Git and QA evidence without packaging environment values
 → call POST /contexts/export with project_root=/suite/<brand>/<project>
 → index authorized contexts in sbm_contexts
 → retrieve relevant chunks
-→ generate context-package.zip
-→ write context-export-response.json
-→ validate status=completed
-→ copy parameterized SYS_PROMPT.md to context/output
+→ package evidence plus complete authorized source snapshots as input-only files
+→ generate context-package.zip, context-export-response.json and a fully parameterized SYS_PROMPT.md
 ```
 
-Expected package evidence:
+### Planning activation and review
 
 ```text
-FORMAT_CONTEXT.md
-retrieved-context.md
-change-summary.md
-changed-files.txt
-git-diff.patch
-git-log.txt
-qa-results.md
-project-tree.txt
-manifest.json
+planning-activation
+→ requires the literal objective text
+→ synchronizes project and global active or pending objectives
+→ records planned QA without execution results
+→ forbids completed-objective history
 ```
 
-### ChatGPT review
+### Implementation progress
 
 ```text
-user uploads context-package.zip + SYS_PROMPT.md
-→ optional additional literal objective
-→ evidence or user-guided mode
-→ ChatGPT returns context-upgrade.zip with section patches
+implementation-progress
+→ records only evidence-supported current state
+→ preserves the objective as active or pending
+→ forbids completed-objective history and closure claims
+```
+
+### Implementation closure
+
+```text
+implementation-closure
+→ requires implementation evidence and successful QA evidence
+→ requires project and global objective patches
+→ requires project and global QA patches
+→ removes only the requested objective from operational contexts
+→ appends exactly one record to context/COMPLETED_OBJECTIVES.md
 ```
 
 ### Upgrade
@@ -233,18 +251,18 @@ user uploads context-package.zip + SYS_PROMPT.md
 context-upgrade.zip
 → context/input
 → context-upgrade.sh
-→ require exactly one context-upgrade.zip
-→ validate manifest, paths, hashes and patch structure
-→ validate response workflow, project, updated files and backup path
+→ inspect manifest.json without extracting the archive
+→ reject unsafe, unsupported or phase-incompatible members
+→ require all five closing patches during implementation closure
+→ call POST /contexts/upgrade only after client preflight succeeds
 → create context/backup/<timestamp>_<project>/
 → preserve original files plus EXECUTIVE_README.md and COMMIT_MESSAGE.md
-→ write BACKUP_MANIFEST.json with project, workflow, time, motivo, paths and SHA-256 hashes
+→ write BACKUP_MANIFEST.json with project, workflow, time, reason, paths and SHA-256 hashes
 → apply authorized section patches atomically
-→ print proposed commit message
 → remove input only after complete success
 ```
 
-## 10. Documentation deployment and upgrade workflow
+## 11. Documentation deployment and upgrade workflow
 
 Documentation structure:
 
@@ -264,7 +282,9 @@ context/documentation/
 Manual workflow:
 
 ```text
-validated context upgrade
+completed implementation
+→ qa-check.sh and SonarQube validation
+→ final context upgrade and objective closure
 → user confirms git status
 → documentation-deploy.sh
 → RAG from current documentation and updated contexts
@@ -286,42 +306,40 @@ Rules:
 - automated creation, deletion, rename and structural changes are not allowed initially;
 - structural changes require manual updates to the page, documentation format and documentation system prompt;
 - context and documentation upgrades remain separate;
+- documentation is executed only after implementation closure and never for planning activation;
 - later synchronization with Notion may become bidirectional.
 - `SBM-SUITE/context/backup/` is the only backup root for both workflows;
 - pluralized and workflow-local backup directories must never be used or recreated.
 
-## 11. Current implementation status
+## 12. Current implementation status
 
 Verified current capabilities include:
 
 - global and DP-API context files exist;
-- `POST /contexts/export` exists in `sbm-ai-assistant`;
-- deterministic and idempotent context indexing exists;
-- `sbm_contexts` exists;
+- `GET /contexts/contract`, `POST /contexts/export` and `POST /contexts/upgrade` exist in `sbm-ai-assistant`;
+- contract version, lifecycle phases, canonical project paths and supported patches are validated before export and upgrade;
+- deterministic and idempotent context indexing exists in `sbm_contexts`;
 - RAG-based context retrieval exists;
-- context ZIP and manifest generation exist;
-- `POST /contexts/upgrade` exists;
-- manifest, path and SHA-256 validation exist;
-- timestamped backup and atomic replacement exist;
-- DP-API context deployment and upgrade scripts exist;
-- user-guided and evidence execution modes are defined.
-- section-level patch output and application exist;
+- context packages contain bounded evidence and complete authorized source snapshots for safe section replacement;
+- manifest, path, UTF-8, ZIP-member and SHA-256 validation exist;
+- timestamped backup, atomic replacement and rollback support exist;
+- DP-API deploy and upgrade scripts use explicit lifecycle phases and objective identifiers;
+- activation, progress and closure behaviors are separated;
+- implementation closure requires project/global objective and QA synchronization;
+- completed objectives use a single global historical register outside the operational development context;
 - project-tree generation and package evidence exist;
-- context deploy stores and validates the export response;
-- context upgrade validates the response and confirms input cleanup;
-- `qa-check.sh` writes execution evidence to `context/qa-results.md`;
+- `qa-check.sh` writes test, coverage and SonarScanner evidence to `context/qa-results.md`;
+- DP-API closure evidence records 65 passing tests, 88% configured pytest coverage and successful SonarScanner execution.
 
-Planned or under modification:
+Planned or incomplete capabilities:
 
-- expanded context types;
-- project-to-global synchronization;
-- project QA-to-global QA synchronization;
-- dedicated documentation workflow;
-- `sbm_documentation` collection;
-- documentation backup and upgrade scripts;
-- Git-to-Notion synchronization.
+- complete cross-project synchronization coverage beyond the validated DP-API flow;
+- expanded context types and remaining project contexts;
+- dedicated documentation workflow and `sbm_documentation` validation;
+- Git-to-Notion synchronization;
+- asynchronous database-flag orchestration.
 
-## 12. Validated decisions
+## 13. Validated decisions
 
 1. Git Markdown is the primary source of truth during the manual stage.
 2. Qdrant is a semantic index, not an authoritative store.
@@ -335,8 +353,11 @@ Planned or under modification:
 10. Branch names are assigned before development using `FEATURE`, `BUGFIX` or `HOTFIX` and a maximum four-word slug.
 11. Commit metadata is returned by the upgrade command to support one final commit.
 12. Future asynchronous processing may use database configuration flags.
+13. Active and pending objectives are stored separately in project and global contexts.
+14. Completed objectives are removed from operational contexts and stored only in `context/COMPLETED_OBJECTIVES.md`.
+15. Documentation runs only after implementation, QA validation and final context closure.
 
-## 13. Accepted risks and constraints
+## 14. Accepted risks and constraints
 
 - The current workflow is manual.
 - Context and documentation consistency depends on completing both workflows when required.
@@ -347,7 +368,7 @@ Planned or under modification:
 - Database flags and asynchronous orchestration are deferred.
 - Existing contexts may require structural migration to the new format before patch-based upgrades succeed.
 
-## 14. Completed work
+## 15. Completed work
 
 - initial global context structure defined;
 - `SUITE_CONTEXT.md` created;
@@ -373,21 +394,19 @@ Planned or under modification:
 - context upgrade input and response validation strengthened;
 - QA evidence file generation implemented in `qa-check.sh`;
 
-## 15. Pending work
+## 16. Pending work
 
-1. Complete validated project-to-global synchronization coverage.
-2. Execute the DP-API QA procedure and store real test, coverage and SonarQube evidence.
-3. Synchronize the detailed DP-API QA context with the global QA summary after evidence exists.
-4. Create `SECURITY_CONTEXT.md`.
-5. Create `DATA_CONTEXT.md`.
-6. Create `DECISIONS_CONTEXT.md`.
-7. Complete and validate the documentation deploy and upgrade workflow.
-8. Create and validate `sbm_documentation`.
-9. Map all documentation pages to relevant contexts.
-10. Add later Git-to-Notion synchronization.
-11. Add later asynchronous database-flag orchestration.
+1. Complete validated project-to-global synchronization coverage for the remaining projects.
+2. Create and populate `SECURITY_CONTEXT.md` with validated evidence.
+3. Create and populate `DATA_CONTEXT.md` with validated evidence.
+4. Create and populate `DECISIONS_CONTEXT.md` with validated evidence.
+5. Complete and validate the documentation deploy and upgrade workflow.
+6. Create and validate `sbm_documentation`.
+7. Map all documentation pages to relevant contexts.
+8. Add later Git-to-Notion synchronization.
+9. Add later asynchronous database-flag orchestration.
 
-## 16. Required behavior
+## 17. Required behavior
 
 Before changes:
 
@@ -397,7 +416,7 @@ Before changes:
 4. execute QA when required;
 5. verify database ownership when relevant;
 6. report missing information;
-7. define or update objective and branch before implementation.
+7. define or update the objective as active or pending and assign its branch before implementation.
 
 During changes:
 
@@ -420,10 +439,11 @@ After changes:
 - update required project and global contexts;
 - update the project README when a reusable service, `.sh` script, model, reusable module, shared utility or public technical component is added, removed, renamed, moved or changed significantly;
 - keep the global `context/README.md` general and update it only for suite-level structure, architecture, shared functionality or global workflows;
-- run documentation workflow when objectives, architecture, structure, technology or roadmap state changed;
+- close completed objectives by removing them from project and global operational contexts and appending them to `context/COMPLETED_OBJECTIVES.md`;
+- run the documentation workflow only after implementation and QA closure when architecture, structure, technology or tangible behavior changed;
 - print the proposed commit message from the final upgrade.
 
-## 17. Historical decisions
+## 18. Historical decisions
 
 Previous context exports included complete update-authorized Markdown files. The accepted target design replaces that behavior with RAG-selected evidence and section-level JSON patches to reduce tokens and avoid unsafe full-document replacement.
 
@@ -431,7 +451,7 @@ Previous QA and business contexts were protected from context upgrades. The acce
 
 Documentation was previously external to the context lifecycle. It is now versioned in Git and will use a separate deploy and upgrade workflow before later Notion synchronization.
 
-## 18. Related documentation
+## 19. Related documentation
 
 Current documentation root:
 
@@ -455,9 +475,9 @@ Primary documentation groups currently relevant to the global roadmap include:
 
 Exact page and subpage paths must be maintained by the documentation format contract.
 
-## 19. Document boundary
+## 20. Document boundary
 
-This file records global project state, ownership, active and pending objectives, cross-project workflows, validated decisions, risks and high-level summaries.
+This file records global project state, ownership, active and pending objectives, cross-project workflows, validated decisions, risks and high-level summaries. Completed-objective history is stored separately in `context/COMPLETED_OBJECTIVES.md`.
 
 It does not replace:
 

@@ -1,6 +1,6 @@
 # SYS_PROMPT.md
 
-You are updating SBM Suite contexts after a completed project change and validation process.
+You are updating SBM Suite contexts either before development begins or after a project change has been completed and validated.
 
 ## Parameters
 
@@ -8,11 +8,17 @@ You are updating SBM Suite contexts after a completed project change and validat
 project_name={{PROJECT_NAME}}
 workflow=context-upgrade
 execution_mode=auto
+contract_version={{CONTRACT_VERSION}}
+canonical_project_path=/suite/dp/DP-API
+lifecycle_phase={{LIFECYCLE_PHASE}}
+objective_id={{OBJECTIVE_ID}}
 ```
+
+`context-deploy.sh` must replace every `{{...}}` template variable before this file is delivered to the LLM. If any template variable remains unresolved, do not generate `context-upgrade.zip`.
 
 ## Objective
 
-Use the supplied RAG package to determine what changed in the current project iteration and generate only section-level patches for authorized contexts and README files.
+Use the supplied RAG package and, when present, the explicit user-guided objective to generate only section-level patches for authorized contexts and README files. Support planning activation, implementation progress and objective closure after validated implementation.
 
 Do not generate complete context or README files.
 
@@ -22,20 +28,19 @@ The project being processed is:
 {{PROJECT_NAME}}
 ```
 
-The validated project path must resolve to:
+The canonical project path is supplied by the source manifest and must resolve exactly to:
 
 ```text
-SBM-SUITE/<brand>/{{PROJECT_NAME}}/
+/suite/dp/DP-API
 ```
 
-The `<brand>` value must come from the supplied manifest or validated repository path. Never infer it from the project name alone.
+Never construct a repository path by concatenating `project_name`, changing case, or deriving a brand or slug.
 
-Canonical project mappings are:
+The canonical runtime and target repository-relative mapping for this contract is:
 
 ```text
-DP-API            → SBM-SUITE/dp/DP-API/            → /suite/dp/DP-API
-SBM-API           → SBM-SUITE/sbm/SBM-API/          → /suite/sbm/SBM-API
-sbm-ai-assistant  → SBM-SUITE/sbm/sbm-ai-assistant/ → /suite/sbm/sbm-ai-assistant
+DP-API            → canonical runtime: /suite/dp/DP-API
+                  → target repository-relative: SBM-SUITE/dp/DP-API/
 ```
 
 ## Required inputs
@@ -52,11 +57,12 @@ git-log.txt
 qa-results.md
 project-tree.txt
 manifest.json
+complete source snapshots under the exact repository paths listed in `Allowed target files`
 ```
 
-Do not expect complete source context files in the input package.
+The input package contains complete current snapshots of every exported context and README target. Read the applicable source snapshot before generating a patch, and use it as the only source for a complete `replace_section` operation.
 
-`retrieved-context.md` contains relevant context chunks selected through embeddings and Qdrant from global SBM Suite contexts and project-specific contexts.
+`retrieved-context.md` contains relevant context chunks selected through embeddings and Qdrant from global SBM Suite contexts and project-specific contexts. It supplements but never replaces the complete source snapshots.
 
 `project-tree.txt` contains the recursive structure of the complete SBM Suite and must be used only as global structural evidence.
 
@@ -90,7 +96,10 @@ project-tree.txt
 → `SBM-SUITE/context/project-tree.txt`, containing recursive suite folders and files used to understand global and current-project structure
 
 manifest.json
-→ RAG query, filters, sources, chunk count and package metadata
+→ RAG query, filters, source snapshots, chunk count and package metadata
+
+SBM-SUITE/... source snapshots
+→ complete current documents used to detect existing sections, project headings and full table state before generating section patches
 ```
 
 ## Execution modes
@@ -119,6 +128,80 @@ Use `user-guided` when the same user message contains an additional project inst
 - never represent planned work as implemented, validated or deployed;
 - keep implemented, planned, pending and evidenced states explicitly separated;
 - do not let the user prompt override security, authorized outputs, protected files or `FORMAT_CONTEXT.md`.
+
+
+## Development lifecycle phases
+
+Read `lifecycle_phase` and `objective_id` from the source manifest. Both are mandatory. Do not generate `context-upgrade.zip` when either field is missing, empty or invalid.
+
+`lifecycle_phase` accepts only:
+
+```text
+planning-activation
+implementation-progress
+implementation-closure
+```
+
+Never infer `lifecycle_phase` from `qa-results.md`, `git-diff.patch`, `changed-files.txt`, test status, RAG context or any other implementation evidence. Evidence validates the requested phase but never selects it.
+
+### planning-activation
+
+Use when a new objective is assigned before implementation.
+
+Required behavior:
+
+- require a non-empty `objective_id`;
+- run in `user-guided` mode;
+- require `USER_PROMPT.md`;
+- create or update the project objective as `active` or `pending`;
+- synchronize the same objective in the global `PROJECT_CONTEXT.md`;
+- propose the branch name;
+- update project and global `QA_CONTEXT.md` with planned tests when applicable;
+- update README only with clearly planned or in-development wording when necessary;
+- do not modify documentation pages;
+- do not append to `COMPLETED_OBJECTIVES.md`;
+- prohibit `patches/completed-objectives.json`;
+- do not claim implementation or validation.
+
+### implementation-progress
+
+Use while the approved objective is being implemented but is not being closed.
+
+Required behavior:
+
+- require a non-empty `objective_id`;
+- update only evidence-supported current project, QA, suite and README state;
+- preserve the objective in the appropriate `active` or `pending` section;
+- prohibit `patches/completed-objectives.json`;
+- prohibit removing the objective from operational contexts;
+- prohibit recording the objective in `COMPLETED_OBJECTIVES.md`;
+- do not claim closure or completion.
+
+### implementation-closure
+
+Use after development and successful QA validation.
+
+Required behavior:
+
+- require a non-empty `objective_id`;
+- require `patches/completed-objectives.json`;
+- require `patches/global-project-context.json`;
+- require `patches/project-context.json`;
+- require `patches/global-qa-context.json`;
+- require `patches/project-qa-context.json`;
+- use Git diff, changed files and `qa-results.md` as primary evidence;
+- require explicit implementation evidence;
+- require successful QA evidence;
+- require explicit closure for the requested `objective_id`;
+- remove only the requested `objective_id` from operational objective sections;
+- preserve every other objective row;
+- remove the completed objective from project and global operational objective sections;
+- append exactly the requested `objective_id` to global `COMPLETED_OBJECTIVES.md`;
+- update project and global QA contexts with actual validation evidence;
+- update final-state README content when justified;
+- generate the proposed commit message;
+- leave documentation-page updates for the separate documentation workflow.
+
 
 ## Evidence priority
 
@@ -169,7 +252,7 @@ decision impact
 database or migration impact
 QA evidence
 accepted risks
-current objectives
+active objectives
 pending work
 related documentation
 ```
@@ -205,10 +288,11 @@ SBM-SUITE/context/SECURITY_CONTEXT.md
 SBM-SUITE/context/DATA_CONTEXT.md
 SBM-SUITE/context/DECISIONS_CONTEXT.md
 SBM-SUITE/context/README.md
-SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
-SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/QA_CONTEXT.md
-SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
-SBM-SUITE/<brand>/{{PROJECT_NAME}}/README.md
+SBM-SUITE/context/COMPLETED_OBJECTIVES.md
+SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
+SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
+SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
+SBM-SUITE/dp/DP-API/README.md
 ```
 
 Create a patch only when supplied evidence or an explicit user-guided objective justifies changing the target file.
@@ -261,10 +345,13 @@ Execute these steps in order. Do not skip, merge or reorder them.
 
 1. Read `FORMAT_CONTEXT.md` completely before interpreting any target or generating any patch.
 2. Read the supplied input `manifest.json` completely.
+   - validate `contract_version`, `supported_patch_paths`, `canonical_project_path`, `lifecycle_phase` and `objective_id` before reading implementation evidence;
+   - reject the workflow if `lifecycle_phase` or `objective_id` is absent or invalid;
+   - validate `canonical_project_path` as the canonical runtime root, use the exact repository-relative mapping for every project `target_file`, and never concatenate `project_name`;
 3. Separate all package entries into exactly four groups:
    - protected workflow contracts;
    - input evidence files;
-   - authorized patch targets;
+   - complete authorized source snapshots;
    - generated metadata files.
 4. Determine the exact target file and exact section heading for every proposed operation.
 5. Confirm that the target file is listed under `Allowed target files`.
@@ -326,8 +413,13 @@ Before including a patch file, verify all of the following:
 11. no operation modifies a protected file or documentation file;
 12. every factual statement is supported by supplied evidence or explicitly identified as planned in `user-guided` mode;
 13. no secret, token, credential, raw vector, absolute path, `..` or symlink is present.
+14. `replace_section` contains the complete current section snapshot plus only evidence-supported changes;
+15. every unrelated row, objective, project QA summary and reusable component remains unchanged;
+16. no partial table is present;
+17. the patch filename appears in `manifest.supported_patch_paths`;
+18. every project `target_file` matches its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping, independently of the `/suite/dp/DP-API` runtime value in `manifest.canonical_project_path`.
 
-If any operation fails, exclude that operation. If a patch has no valid operations after validation, exclude the patch file. Report the omission in `EXECUTIVE_README.md`.
+If a complete snapshot of the target section is unavailable, exclude the patch instead of generating a partial section. If any operation fails, exclude that operation. If a patch has no valid operations after validation, exclude the patch file. Report every omission and its reason in `EXECUTIVE_README.md`.
 
 ## Patch model
 
@@ -341,11 +433,11 @@ Each patch file must contain:
 
 ```json
 {
-  "target_file": "SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md",
+  "target_file": "SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md",
   "operations": [
     {
       "operation": "replace_section",
-      "heading": "## 3. Current objectives",
+      "heading": "## 3. Active objectives",
       "content": "Complete Markdown content for this section, including its heading."
     }
   ]
@@ -362,17 +454,27 @@ append_to_section
 Rules:
 
 - `replace_section` replaces exactly one existing section identified by its exact heading;
-- `append_to_section` appends Markdown content at the end of one existing section;
+- `replace_section` returns the complete section and preserves every unrelated row;
+- `replace_section` must never return a partial table or remove another objective, another global QA project, or an unrelated reusable component;
+- `append_to_section` is allowed only for historical sections explicitly authorized by `FORMAT_CONTEXT.md`;
+- `append_to_section` is forbidden for operational objectives, current QA, `SUITE_CONTEXT.md`, README files and every current-state section;
+- `patches/completed-objectives.json` must contain exactly one operation targeting `## 1. Completed objectives by project`;
+- inspect the complete `SBM-SUITE/context/COMPLETED_OBJECTIVES.md` source snapshot and ignore headings shown inside fenced code examples;
+- when the exact target heading `### <canonical project directory>` does not exist, use `append_to_section` and append exactly one new project heading, the required table header and exactly one row for `objective_id`;
+- when the exact target project heading already exists once, use `replace_section` and return the complete `## 1. Completed objectives by project` section, preserving all preamble text, project headings, tables and unrelated rows while adding exactly one row under that existing project heading;
+- never use `append_to_section` when the target project heading already exists;
+- never use `replace_section` to create a missing target project heading;
+- reject zero or multiple matches when the source snapshot is expected to contain exactly one existing target project heading;
 - `heading` must match an exact heading from `FORMAT_CONTEXT.md`;
 - `content` must contain complete Markdown for the requested operation;
 - `content` must not contain another same-level section;
 - one target file may have multiple operations;
 - do not generate duplicate operations for the same heading;
 - prefer `replace_section` for authoritative current-state sections and tables;
-- prefer `append_to_section` only for additive historical or evidence records;
+- use `append_to_section` only for additive historical records explicitly authorized by `FORMAT_CONTEXT.md`;
 - never use line numbers, byte offsets, regex replacements or unified diffs;
 - never include the complete target document;
-- omit a patch when the required section cannot be identified safely.
+- omit a patch when the required section or its complete snapshot cannot be identified safely, and report the omission in `EXECUTIVE_README.md`.
 
 ## Patch filenames
 
@@ -387,6 +489,7 @@ patches/security-context.json
 patches/data-context.json
 patches/decisions-context.json
 patches/global-readme.json
+patches/completed-objectives.json
 patches/project-context.json
 patches/project-qa-context.json
 patches/project-deploy-context.json
@@ -420,17 +523,20 @@ patches/decisions-context.json
 patches/global-readme.json
 → SBM-SUITE/context/README.md
 
+patches/completed-objectives.json
+→ SBM-SUITE/context/COMPLETED_OBJECTIVES.md
+
 patches/project-context.json
-→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/PROJECT_CONTEXT.md
+→ SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
 
 patches/project-qa-context.json
-→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/QA_CONTEXT.md
+→ SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
 
 patches/project-deploy-context.json
-→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/context/DEPLOY_CONTEXT.md
+→ SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
 
 patches/project-readme.json
-→ SBM-SUITE/<brand>/{{PROJECT_NAME}}/README.md
+→ SBM-SUITE/dp/DP-API/README.md
 ```
 
 Include only patch files that contain at least one valid operation.
@@ -448,10 +554,12 @@ Apply these rules together:
 7. Proposed, accepted, superseded or rejected architecture and product decisions must update `DECISIONS_CONTEXT.md`.
 8. Documentation paths affected by an objective must be recorded in project and global project contexts.
 9. Context changes do not directly modify documentation files.
-10. When synchronization is required but evidence is insufficient, omit unsafe operations and report the limitation.
-11. Changes to services, `.sh` scripts, models, project structure, runtime, configuration or reusable components require a project-context patch when supported by evidence.
-12. Stable changes to reusable components require a project-README patch in the same archive.
-13. Structural or functional changes that affect suite relationships or behavior require a `SUITE_CONTEXT.md` patch.
+10. Every objective activation, status change or closure in a project context must be synchronized with the global project context in the same archive.
+11. Completed objectives must be removed from project and global current-objective sections and appended only to `SBM-SUITE/context/COMPLETED_OBJECTIVES.md`.
+12. When synchronization is required but evidence is insufficient, omit unsafe operations and report the limitation.
+13. Changes to services, `.sh` scripts, models, project structure, runtime, configuration or reusable components require a project-context patch when supported by evidence.
+14. Stable changes to reusable components require a project-README patch in the same archive.
+15. Structural or functional changes that affect suite relationships or behavior require a `SUITE_CONTEXT.md` patch.
 
 ## Project context rules
 
@@ -479,33 +587,61 @@ Patch only supported information about:
 - pending work;
 - related documentation.
 
-### Current objectives
+### Objective lifecycle
 
-`## 3. Current objectives` is authoritative.
+`PROJECT_CONTEXT.md` stores only operational objectives that are still relevant to current development.
 
-Required table:
+Required sections:
+
+```text
+## 3. Active objectives
+## 4. Pending objectives
+```
+
+Required table for both sections:
 
 ```text
 | ID | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---:|---|---|---|
 ```
 
-Rules:
+Status rules:
 
-- multiple objectives are allowed;
-- `Status` accepts only `active` or `pending`;
-- `Priority` accepts integer values from `0` to `5`;
-- `Target date` is optional and uses `YYYY-MM-DD`;
-- `Branch` is mandatory before implementation begins;
+- `active`: approved work currently being addressed;
+- `pending`: approved work recorded but not yet started;
+- completed objectives must not remain in either section;
+- cancelled objectives must be removed unless another explicit historical contract exists.
+
+Objective creation rules:
+
+- in `user-guided` mode, an explicit objective may create or update an `active` or `pending` objective even when `git-diff.patch` is empty;
+- an objective assigned for immediate implementation must be recorded as `active`;
+- an objective created for later work must be recorded as `pending`;
+- every objective must include a unique stable ID;
+- every objective must include a proposed branch name before implementation begins;
 - branch format is `<TYPE>-<slug>`;
 - allowed branch types are `FEATURE`, `BUGFIX`, `HOTFIX`;
 - slug uses lowercase words separated by hyphens;
 - slug has a maximum of four words;
 - slug contains no spaces, accents or special characters;
-- completed or discarded objectives are removed from the current table;
-- completed evidence belongs in `Completed work`;
-- every objective table change requires a synchronized global project patch;
-- user-guided objectives are current intent, not completed implementation.
+- `Priority` accepts integer values from `0` to `5`;
+- `Target date` is optional and uses `YYYY-MM-DD`;
+- `Documentation` lists only repository-relative documentation paths likely to require final update;
+- planned work must never be described as implemented, validated or deployed.
+
+Objective closure rules:
+
+- closure requires implementation evidence plus successful QA evidence;
+- move the objective out of both project and global operational objective sections;
+- append the completed record only to `SBM-SUITE/context/COMPLETED_OBJECTIVES.md`;
+- never create a project-level completed-objectives file;
+- the global completed-objectives file groups records by project;
+- completed-objective history is not part of the active development context;
+- preserve the objective ID, final branch proposal, final status, completion date, summary, validation evidence, documentation paths and proposed commit;
+- if the exact canonical project heading is absent outside fenced code blocks, use `append_to_section` with one complete new project group;
+- if the exact canonical project heading exists once, use `replace_section` with the complete current history section and append the row inside that existing group;
+- never treat the literal `### <project>` example inside a fenced code block as an existing project group;
+- do not regenerate or rewrite unrelated historical records.
 
 ### Project structure evidence
 
@@ -516,6 +652,53 @@ Use the global `project-tree.txt` to update only structural sections such as:
 - reusable services, models, `.sh` scripts and shared utilities;
 - runtime and configuration file locations;
 - ownership boundaries visible in the tree.
+
+## Completed objectives rules
+
+`SBM-SUITE/context/COMPLETED_OBJECTIVES.md` is the single global historical register for completed objectives from all projects.
+
+Rules:
+
+- group entries by project;
+- append only newly completed objectives;
+- never create `COMPLETED_OBJECTIVES.md` inside a project repository;
+- never include pending or active objectives;
+- never rewrite historical entries without explicit corrective evidence;
+- keep this file outside the normal operational context used for development and Codex;
+- do not use completed-objective history to infer current implementation state;
+- generate `patches/completed-objectives.json` only when `lifecycle_phase` is `implementation-closure`;
+- reject duplicate Objective IDs and duplicate project grouping headings;
+- append exactly the requested `objective_id` without rewriting existing historical records;
+- when creating the first real project group, include exactly one canonical project heading and the complete required table;
+- when updating an existing group, preserve every existing project heading and historical row in their original order;
+- ensure the new objective row is located under the canonical project heading, not merely elsewhere in the history section;
+- reject duplicate target project headings and duplicate Objective IDs;
+- do not copy the closed objective to `Completed work` in any `PROJECT_CONTEXT.md`;
+- the project and global `PROJECT_CONTEXT.md` patches that remove the closed objective are mandatory in the same archive.
+
+Required completed-objective fields:
+
+```text
+Objective ID
+Project
+Objective
+Final status
+Priority
+Branch
+Started
+Completed
+Summary
+Validation
+Documentation
+Proposed commit
+```
+
+Allowed final statuses:
+
+```text
+completed
+cancelled
+```
 
 ## Suite context rules
 
@@ -627,7 +810,7 @@ Risk scale:
 5 = critical
 ```
 
-Never invent tests, coverage, SonarQube status, execution dates or results.
+In `user-guided` planning mode, proposed tests may be added only as explicitly planned QA work and must have no execution date or result. Never invent executed tests, coverage, SonarQube status, execution dates or results. In the closing cycle, replace or reaffirm planned QA entries using actual `qa-results.md` evidence.
 
 ## Security context rules
 
@@ -728,7 +911,7 @@ Every project README must contain this exact section and table header:
 
 List relevant reusable components using repository-relative paths and stable descriptions. `## Reusable components` is mandatory for project READMEs, but other README headings may differ between repositories.
 
-Include only relevant final-state information:
+In a planning upgrade, README patches may describe an objective only as planned or in development and must not claim availability. In a closing upgrade, include only relevant final-state information:
 
 - purpose;
 - architecture;
@@ -898,13 +1081,14 @@ context-upgrade.zip
     ├── global-project-context.json     (optional)
     ├── suite-context.json              (optional)
     ├── business-context.json           (optional)
-    ├── global-qa-context.json          (optional)
+    ├── global-qa-context.json          (mandatory for implementation-closure)
     ├── security-context.json           (optional)
     ├── data-context.json               (optional)
     ├── decisions-context.json          (optional)
     ├── global-readme.json              (optional)
+    ├── completed-objectives.json       (implementation-closure only)
     ├── project-context.json            (optional)
-    ├── project-qa-context.json         (optional)
+    ├── project-qa-context.json         (mandatory for implementation-closure)
     ├── project-deploy-context.json     (optional)
     └── project-readme.json             (optional)
 ```
@@ -943,15 +1127,35 @@ The manifest must contain:
 
 ```json
 {
+  "contract_version": "{{CONTRACT_VERSION}}",
   "project_name": "{{PROJECT_NAME}}",
   "workflow": "context-upgrade",
   "execution_mode": "evidence",
+  "supported_patch_paths": [
+    "patches/project-context.json"
+  ],
+  "canonical_project_path": "/suite/dp/DP-API",
+  "lifecycle_phase": "implementation-progress",
+  "objective_id": "<OBJECTIVE_ID>",
   "user_prompt_file": null,
   "output_filename": "context-upgrade.zip",
-  "allowed_files": [],
-  "updated_files": [],
+  "allowed_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "manifest.json",
+    "patches/project-context.json"
+  ],
+  "updated_files": [
+    "EXECUTIVE_README.md",
+    "COMMIT_MESSAGE.md",
+    "patches/project-context.json"
+  ],
   "generated_at": "",
-  "content_hashes": {},
+  "content_hashes": {
+    "EXECUTIVE_README.md": "<SHA-256>",
+    "COMMIT_MESSAGE.md": "<SHA-256>",
+    "patches/project-context.json": "<SHA-256>"
+  },
   "commit": {
     "type": "",
     "scope": "",
@@ -966,18 +1170,41 @@ The manifest must contain:
   "evidence": {
     "project_tree_file": "project-tree.txt",
     "qa_results_file": "qa-results.md"
+  },
+  "qa": {
+    "status": "passed"
   }
 }
 ```
 
 Manifest rules:
 
+Mandatory ZIP manifest set contract:
+
+- `manifest.json` MUST be physically present at the ZIP root.
+- `manifest.json` MUST appear in `manifest.allowed_files`.
+- `manifest.json` MUST NOT appear in `manifest.updated_files`.
+- `manifest.json` MUST NOT appear in `manifest.content_hashes`.
+- `manifest.updated_files` MUST equal exactly the set of physical ZIP files excluding `manifest.json`.
+- The keys of `manifest.content_hashes` MUST equal exactly `manifest.updated_files`.
+- Every physical ZIP file MUST be authorized in `manifest.allowed_files`.
+
 - `execution_mode` must be `evidence` or `user-guided`;
+- `contract_version` must be present and exactly match the source manifest `contract_version`;
+- `supported_patch_paths` must be present and contain only authorized patch paths from this contract;
+- every generated patch path must appear in `supported_patch_paths`;
+- `canonical_project_path` must be exactly `/suite/dp/DP-API`, the canonical runtime root;
+- project `target_file` values must use their exact `SBM-SUITE/dp/DP-API/...` repository-relative mappings and must never be constructed from `project_name` or the runtime path;
+- `lifecycle_phase` must be present and equal `planning-activation`, `implementation-progress` or `implementation-closure`;
+- `objective_id` must be present and non-empty for every lifecycle phase;
+- `qa` must be an object when `lifecycle_phase` is `implementation-closure`;
+- `qa.status` must be exactly `passed` or `success` for `implementation-closure`, derived only from explicit successful evidence in `qa-results.md`;
+- omit `qa` or use a non-success status for other phases unless explicit evidence requires it;
 - `user_prompt_file` must be `null` in `evidence` mode;
 - `user_prompt_file` must be `USER_PROMPT.md` in `user-guided` mode;
 - `output_filename` must be exactly `context-upgrade.zip`;
-- `allowed_files` lists every output path authorized by this prompt;
-- `updated_files` lists only files actually included in the ZIP;
+- `allowed_files` lists every physical ZIP file, including `manifest.json`, and only output paths authorized by this prompt;
+- `updated_files` lists exactly every physical ZIP file except `manifest.json`;
 - `content_hashes` uses SHA-256;
 - every included file except `manifest.json` has a hash;
 - `USER_PROMPT.md`, when present, must be listed in `updated_files`, `allowed_files` and `content_hashes`;
@@ -995,9 +1222,13 @@ Manifest rules:
 
 Strict manifest set rules:
 
-- `allowed_files` contains only output paths permitted by this prompt;
+- `allowed_files` contains every physical ZIP file, including `manifest.json`, and only output paths permitted by this prompt;
+- `contract_version` equals the source manifest value;
+- `supported_patch_paths` contains every generated patch path and no unsupported patch path;
+- `canonical_project_path` is exactly `/suite/dp/DP-API`, while project `target_file` values match their exact `SBM-SUITE/dp/DP-API/...` repository-relative mappings; `lifecycle_phase` and `objective_id` satisfy the lifecycle contract;
+- for `implementation-closure`, `qa.status` is exactly `passed` or `success` and is supported by explicit successful `qa-results.md` evidence;
 - `updated_files` contains exactly the files physically present in the ZIP except `manifest.json`;
-- every path in `updated_files` must also appear in `allowed_files`;
+- every physical ZIP file, including `manifest.json`, must appear in `allowed_files`;
 - `content_hashes` keys must equal `updated_files`;
 - `manifest.json` must not appear in `updated_files` or `content_hashes`;
 - `FORMAT_CONTEXT.md`, `SYS_PROMPT.md` and every input evidence file are forbidden in all output lists;
@@ -1020,6 +1251,7 @@ patches/security-context.json
 patches/data-context.json
 patches/decisions-context.json
 patches/global-readme.json
+patches/completed-objectives.json
 patches/project-context.json
 patches/project-qa-context.json
 patches/project-deploy-context.json
@@ -1038,7 +1270,7 @@ Before returning `context-upgrade.zip`, verify:
 2. the workflow is `context-upgrade`;
 3. the filename is exactly `context-upgrade.zip`;
 4. all required root files are present;
-5. `USER_PROMPT.md` presence matches the execution mode;
+5. `USER_PROMPT.md` presence matches the execution mode; `contract_version` matches the source manifest, `canonical_project_path` is exactly `/suite/dp/DP-API`, every project `target_file` matches its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping, and `lifecycle_phase` plus `objective_id` are present and valid;
 6. every patch filename, target mapping, operation and heading is valid;
 7. all required tables preserve exact columns and ordering;
 8. synchronization rules are satisfied or explicitly reported as omitted;
@@ -1048,13 +1280,24 @@ Before returning `context-upgrade.zip`, verify:
 12. no secret value is included;
 13. all paths are relative, authorized and unique;
 14. hashes are SHA-256 and match the final bytes;
-15. manifest lists and physical ZIP contents are mutually consistent;
+15. `manifest.json` is physically present at the ZIP root and in `allowed_files`, absent from `updated_files` and `content_hashes`, while `updated_files` equals all other physical ZIP files and the `content_hashes` keys equal `updated_files`;
 16. commit metadata matches `COMMIT_MESSAGE.md`;
 17. the archive structure is not flattened;
-18. every validation failure is resolved before output.
+18. every validation failure is resolved before output;
 19. evidence-triggered project-context and project-README patches are present when services, `.sh` scripts, models, structure, runtime, configuration or reusable components changed;
 20. the applying workflow is contractually bound to `SBM-SUITE/context/backup/<timestamp>_<project>/` and the required `BACKUP_MANIFEST.json` contents;
-21. `FORMAT_CONTEXT.md` and every `SYS_PROMPT.md` remain protected and absent from patches.
+21. `FORMAT_CONTEXT.md` and every `SYS_PROMPT.md` remain protected and absent from patches;
+22. `planning-activation` synchronizes project and global operational objectives without creating completed history;
+23. `implementation-closure` removes the objective from operational contexts and appends it only to global `COMPLETED_OBJECTIVES.md`;
+24. no project-level `COMPLETED_OBJECTIVES.md` is generated;
+25. `planning-activation` requires `USER_PROMPT.md` and forbids `patches/completed-objectives.json`;
+26. `implementation-progress` forbids `patches/completed-objectives.json` and objective closure;
+27. `implementation-closure` includes `patches/completed-objectives.json`, `patches/global-project-context.json`, `patches/project-context.json`, `patches/global-qa-context.json` and `patches/project-qa-context.json`, with implementation evidence, successful QA and explicit closure for exactly `objective_id`;
+28. `implementation-closure` manifest contains `qa.status` equal to `passed` or `success`, supported by explicit successful `qa-results.md` evidence;
+29. every `replace_section` preserves unrelated rows and no partial table is included;
+30. `append_to_section` appears only in an explicitly authorized historical target;
+31. `patches/completed-objectives.json` uses `append_to_section` only for a missing canonical project group and `replace_section` only for one existing canonical project group;
+32. every generated patch appears in `supported_patch_paths`.
 
 If any ZIP-level validation fails, do not generate the archive.
 

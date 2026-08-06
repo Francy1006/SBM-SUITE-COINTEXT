@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUTPUT_FILE="${PROJECT_ROOT}/project-tree.txt"
+OUTPUT_FILE="${PROJECT_ROOT}/context/project-tree.txt"
 
 EXCLUDED_NAMES=(
   ".git"

@@ -279,11 +279,12 @@ Rules:
 - vectors are never exported;
 - Git Markdown is the source of truth;
 - Qdrant is a rebuildable semantic index;
-- context packages use selected chunks, evidence and format contracts;
-- documentation packages use documentation chunks and updated contexts;
-- raw complete source files should not be exported when section-level patches are sufficient.
+- context packages contain selected RAG chunks, bounded evidence, the format contract and complete authorized source snapshots;
+- complete source snapshots are input-only and must never appear in the generated upgrade ZIP;
+- generated upgrades contain validated section-level JSON patches rather than complete target documents;
+- documentation packages use documentation chunks and updated contexts only in the separate documentation workflow.
 
-Current context evidence includes Git diff, changed files, change summary, QA results, project tree and retrieved Qdrant chunks. Generated upgrades use validated section-level JSON patches rather than complete context replacements.
+Current context evidence includes Git diff, changed files, change summary, QA results, project tree, retrieved Qdrant chunks and full current snapshots for authorized targets. Contract version and canonical project mappings are validated before export and upgrade.
 
 ## 16. Deployment model
 
@@ -341,56 +342,63 @@ Current verified direction:
 - Material is separated into its own domain app.
 - Service is a planned backend domain.
 - Catalog and Ticket remain future domains.
-- Context export and upgrade endpoints exist.
+- Context contract, export and upgrade endpoints exist.
 - Context RAG uses `sbm_contexts`.
-- Context output is being migrated from complete documents to section-level patches.
-- Global Project, Suite, Business and QA contexts exist.
-- Security, Data and Decisions contexts are being introduced.
-- Documentation lifecycle and `sbm_documentation` are planned.
-- `project-tree.txt` is planned as structural evidence for context deployment.
+- Section-level patch output and complete input-only source snapshots are implemented.
+- Global Project, Suite, Business, QA, Security, Data and Decisions contexts exist.
+- `project-tree.txt` is generated and packaged as structural evidence.
+- Documentation lifecycle and `sbm_documentation` remain separate follow-up work.
 
 Validated workflow state:
 
-- context deployment generates `project-tree.txt`, persists `context-export-response.json` and requires `status=completed`;
-- context upgrade requires exactly one named ZIP, validates the backend response and confirms input cleanup;
+- context deployment validates the published contract before cleaning exchange outputs;
+- lifecycle phase and objective ID are explicit and are not inferred from implementation evidence;
+- implementation closure requires five synchronized objective and QA patches;
+- context upgrade preflights ZIP members, manifest metadata and patch mappings before backend submission;
 - `qa-check.sh` creates bounded execution evidence in `context/qa-results.md`;
-- no successful QA execution, coverage value or SonarQube result is supplied in the current package.
+- the supplied DP-API evidence records 65 passing tests, 88% configured coverage and successful SonarScanner execution;
+- the supplied scanner log does not include a server-side Quality Gate result.
 
 ## 20. Context deployment lifecycle
 
 ```text
 qa-check.sh
-→ execute tests and coverage
-→ execute SonarScanner only when tests and coverage succeed
+→ execute the configured pytest and coverage workflow
+→ execute SonarScanner only after successful test and coverage execution
 → write bounded evidence to context/qa-results.md
 
-context-deploy.sh
-→ read SBM_SUITE_ROOT from the current project's .env.dev without packaging secret values
-→ clean SBM-SUITE/context/input and SBM-SUITE/context/output
-→ execute SBM-SUITE/context/project-tree.sh when present
-→ require SBM-SUITE/context/project-tree.txt
-→ collect Git and QA evidence
-→ call POST /contexts/export with the mounted project path /suite/<brand>/<project>
-→ persist context-export-response.json
-→ require status=completed
-→ generate context-package.zip and parameterized SYS_PROMPT.md
+context-deploy.sh <lifecycle_phase> <objective_id> [user_prompt]
+→ validate planning-activation, implementation-progress or implementation-closure
+→ request GET /contexts/contract and validate the runtime contract
+→ clean suite-global exchange directories only after contract preflight
+→ generate and require project-tree.txt
+→ collect Git and QA evidence without exporting environment values
+→ call POST /contexts/export with /suite/<brand>/<project>
+→ package bounded evidence and complete authorized source snapshots
+→ generate context-package.zip, context-export-response.json and parameterized SYS_PROMPT.md
 
-ChatGPT
-→ read FORMAT_CONTEXT.md and supplied evidence
+review process
+→ read FORMAT_CONTEXT.md, the source manifest, evidence and applicable snapshots
 → generate only authorized section-level JSON patches
+→ use append_to_section for the first completed project group
+→ use replace_section for an existing completed project group
 → generate manifest.json from final ZIP contents
 
 context-upgrade.sh
 → require exactly one context-upgrade.zip
-→ call POST /contexts/upgrade
-→ validate workflow, project_name, updated_files, backup_directory and input_cleaned
+→ request GET /contexts/contract
+→ inspect manifest.json without extracting the archive
+→ reject unsafe, unsupported or phase-incompatible files
+→ require all five closing patches for implementation-closure
+→ call POST /contexts/upgrade only after preflight succeeds
 → create SBM-SUITE/context/backup/<timestamp>_<project>/
 → preserve original files, EXECUTIVE_README.md and COMMIT_MESSAGE.md
-→ write BACKUP_MANIFEST.json with project_name, workflow, generated_at, motivo, original and backup paths, and SHA-256 hashes
-→ confirm the input ZIP was removed only after success
+→ write BACKUP_MANIFEST.json with paths and SHA-256 hashes
+→ apply authorized patches atomically and roll back on failure
+→ remove the input ZIP only after complete success
 ```
 
-The backend remains the mandatory validation, backup, atomic replacement and rollback boundary.
+The backend remains the authoritative validation, backup, replacement and rollback boundary. Client preflight rejects invalid archives earlier but does not replace backend validation.
 
 ## 21. Documentation lifecycle
 

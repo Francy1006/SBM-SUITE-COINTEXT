@@ -8,7 +8,7 @@
 >
 > **Accuracy note**
 >
-> Only explicitly executed and evidenced results may be recorded as validated. Unknown counts, coverage, SonarQube results and dates remain `N/A`.
+> Only explicitly executed and evidenced results may be recorded as validated. Planned QA may be recorded before development only as pending work without execution date or result. Unknown counts, coverage, SonarQube results and dates remain `N/A`.
 
 ## 1. Suite QA overview
 
@@ -31,19 +31,21 @@ Project-specific test plans, fixtures, commands and detailed evidence remain in 
 
 1. Validate behavior through public contracts.
 2. Test the canonical owner.
-3. Preserve project and business ownership boundaries.
-4. Use real integration boundaries when practical.
-5. Keep test data isolated and deterministic.
-6. Never mutate production or shared persistent data during QA.
-7. Never execute unauthorized migrations from application repositories.
-8. Validate success and failure paths.
-9. Validate permissions and tenant isolation.
-10. Record exact commands, evidence and results.
-11. Do not treat passing unit tests as proof of transversal compatibility.
-12. Keep project and global QA contexts synchronized.
-13. Do not hide code from coverage to improve metrics.
-14. Do not mark planned work as executed.
-15. Work one validated step at a time.
+4. Preserve project and business ownership boundaries.
+5. Use real integration boundaries when practical.
+6. Keep test data isolated and deterministic.
+7. Never mutate production or shared persistent data during QA.
+8. Never execute unauthorized migrations from application repositories.
+9. Validate success and failure paths.
+10. Validate permissions and tenant isolation.
+11. Record exact commands, evidence and results.
+12. Do not treat passing unit tests as proof of transversal compatibility.
+13. Keep project and global QA contexts synchronized.
+14. Do not hide code from coverage to improve metrics.
+15. Do not mark planned work as executed.
+15. Planned QA may be added during objective activation only with `Last execution = N/A`, `Result = pending` and explicit planned evidence.
+16. Closing QA updates must replace or reaffirm planned entries using actual execution evidence.
+17. Work one validated step at a time.
 
 ## 3. Quality gates
 
@@ -66,7 +68,7 @@ A gate may be bypassed only through a documented accepted exception.
 
 | Project | QA context | Test count | Passed | Failed | Coverage | SonarQube status | Last execution | Overall risk | Evidence |
 |---|---|---:|---:|---:|---|---|---|---:|---|
-| DP-API | `SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | QA procedure objective pending |
+| DP-API | `SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md` | 65 | 65 | 0 | 88% | analysis successful | 2026-08-02 | 3 | `qa-results.md`: pytest and SonarScanner exit code 0 |
 | SBM-API | `SBM-SUITE/sbm/SBM-API/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
 | SBM-MANAGER | `SBM-SUITE/sbm/SBM-MANAGER/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
 | SBM-DB | `SBM-SUITE/sbm/SBM-DB/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 4 | Database QA context pending |
@@ -98,6 +100,14 @@ Risk scale:
 | QA-TENANT-001 | SBM Suite | Deny cross-tenant read and write operations | security | authentication, authorization, APIs | 5 | N/A | pending | No transversal evidence |
 | QA-DB-001 | SBM Suite | Validate application models against PostgreSQL, Flyway and DBML | database | DP-API, SBM-API, SBM-DB | 5 | N/A | pending | No transversal evidence |
 
+Planning and closure rules:
+
+- During the first context upgrade for an objective, proposed tests may be added as `pending` with no execution date.
+- Proposed tests must be directly tied to the active or pending objective.
+- During the closing context upgrade, planned tests must be reaffirmed, corrected or removed using actual `qa-results.md` evidence.
+- Executed tests require command, date, result and evidence.
+- A completed objective must not retain unresolved mandatory QA entries unless an accepted exception is recorded.
+
 Allowed logic types:
 
 ```text
@@ -115,7 +125,7 @@ deployment
 
 | Project | Tool | Coverage | Threshold | Status | Last execution | Evidence |
 |---|---|---|---|---|---|---|
-| DP-API | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+| DP-API | pytest-cov | 88% | N/A | recorded | 2026-08-02 | `qa-results.md`; `coverage.xml` generated; exit code 0 |
 | SBM-API | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
 | SBM-MANAGER | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
 | SBM-DB | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
@@ -123,7 +133,8 @@ deployment
 
 Coverage rules:
 
-- `qa-check.sh` generates coverage evidence.
+- `qa-check.sh` generates coverage evidence after implementation.
+- Planning upgrades may define required coverage checks, but must not record percentages or pass/fail state.
 - Coverage must use the real project configuration.
 - Exclusions require documented justification.
 - Coverage percentage alone does not prove contract or integration quality.
@@ -132,7 +143,7 @@ Coverage rules:
 
 | Project | Tool | Project key | Status | Issues | Last execution | Evidence |
 |---|---|---|---|---:|---|---|
-| DP-API | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
+| DP-API | SonarQube | DP-API | analysis successful | N/A | 2026-08-02 | `qa-results.md`; scanner exit code 0; analysis uploaded; execution successful |
 | SBM-API | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
 | SBM-MANAGER | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
 | SBM-DB | N/A | N/A | not validated | N/A | N/A | No static-analysis evidence supplied |
@@ -140,7 +151,8 @@ Coverage rules:
 
 Rules:
 
-- Quality Gate status must come from actual scanner output.
+- Quality Gate status must come from actual server output.
+- Planning upgrades may require SonarQube validation, but must not record a status before execution.
 - Scanner failure is not equivalent to a failed Quality Gate.
 - Project keys, URLs and credentials must not be invented or exposed.
 
@@ -303,6 +315,16 @@ FAIL
 → observed behavior violates the accepted contract
 ```
 
+Objective closure requires:
+
+- implementation evidence;
+- applicable planned QA updated with actual results;
+- successful `qa-check.sh` execution;
+- successful SonarQube validation when applicable;
+- synchronized project and global QA contexts;
+- removal of the objective from active and pending contexts;
+- append of the completed objective to `SBM-SUITE/context/COMPLETED_OBJECTIVES.md`.
+
 A release requires:
 
 - applicable project quality gates;
@@ -329,44 +351,36 @@ An exception must never be inferred from missing evidence.
 Current suite QA state:
 
 ```text
-Status: BLOCKED
-Reason: complete project-level test, coverage and SonarQube evidence is not yet supplied.
+Status: PARTIALLY VALIDATED
+Reason: DP-API supplied successful test, coverage and SonarScanner execution evidence; other projects and transversal gates remain incomplete.
 ```
 
-Verified workflow responsibility:
+Verified DP-API closure evidence:
 
 ```text
-qa-check.sh
-→ execute tests
-→ generate coverage
-→ execute SonarQube scanner
-→ produce QA evidence
-
-context-deploy.sh
-→ extract and package QA evidence
-
-context-upgrade.sh
-→ update project and global QA contexts
+65 tests passed
+0 tests failed
+88% configured pytest coverage
+coverage.xml generated
+SonarScanner exit code 0
+ANALYSIS SUCCESSFUL
+EXECUTION SUCCESS
 ```
 
-No test, coverage or SonarQube result is marked as completed by this context update.
+The supplied log does not contain a server-side Quality Gate result for this run. Tenant isolation, object permissions, cross-project integration, deployment and database compatibility remain outside the validated scope.
 
 ## 17. Pending QA work
 
-1. Define the complete DP-API QA procedure.
-2. Standardize `qa-check.sh` evidence output.
-3. Define project-specific coverage thresholds.
-4. Define SonarQube project keys and mandatory gates.
-5. Build project test inventories.
-6. Implement global and project QA context synchronization.
-7. Validate section patch import security.
-8. Validate context backup and rollback.
-9. Implement documentation upgrade QA.
-10. Add transversal tenant-isolation tests.
-11. Add frontend-to-API contract tests.
-12. Add AI Tool-to-API authorization tests.
-13. Add API-to-database compatibility tests.
-14. Create QA contexts for remaining projects.
+1. Define project-specific coverage thresholds.
+2. Define mandatory server-side SonarQube Quality Gate checks.
+3. Build and maintain test inventories for remaining projects.
+4. Validate section-patch import security and rollback behavior end to end.
+5. Implement documentation upgrade QA.
+6. Add transversal tenant-isolation tests.
+7. Add frontend-to-API contract tests.
+8. Add AI Tool-to-API authorization tests.
+9. Add API-to-database compatibility tests.
+10. Create QA contexts for remaining projects.
 
 ## 18. Related documentation
 
@@ -391,7 +405,7 @@ Specific paths will be added when the documentation format and tree are finalize
 
 ## 19. Document boundary
 
-This file stores transversal QA policy, summarized project status, test inventory, quality gates, evidence state, risks and release criteria.
+This file stores transversal QA policy, planned and executed test inventory, summarized project status, quality gates, evidence state, risks and release criteria.
 
 It does not replace:
 
