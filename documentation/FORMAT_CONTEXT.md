@@ -25,7 +25,7 @@
 9. Structural changes require an explicit manual update to this file.
 10. Documentation upgrades use complete Markdown replacements only for authorized files.
 11. Documentation files must remain readable without access to chat history.
-12. Documentation describes validated, completed and tangible project knowledge. Newly planned or merely active objectives remain in contexts and are not added to documentation.
+12. Documentation may include active or pending objectives only in authorized planning, roadmap or pending-work sections. Only completed and validated work may appear as implemented current state.
 13. Context files remain the authoritative source for current implementation state.
 14. Git is the primary documentation source of truth during the manual workflow stage.
 15. Notion synchronization is downstream and must not override Git silently.
@@ -177,7 +177,7 @@ Required structure:
 - `Security`: relevant controls and restrictions.
 - `Validation`: QA, checks or evidence required.
 - `Known limitations`: current confirmed restrictions and gaps.
-- `Roadmap`: preserve existing roadmap content when structurally required, but do not add the current development objective while it remains active or pending.
+- `Roadmap`: may include active or pending objectives as planning only; never represent them as implemented or completed.
 - `Related pages`: repository-relative links to related main pages.
 - `Subpages`: complete list of authorized subpages.
 - `Document boundary`: information intentionally excluded.
@@ -266,7 +266,7 @@ Required structure:
 - `Security considerations`: access, secrets and risk constraints.
 - `Validation`: required checks and acceptance criteria.
 - `Known limitations`: current confirmed limitations.
-- `Pending work`: preserve existing future work when required by the page structure; do not add the current development objective before closure.
+- `Pending work`: may include active or pending objectives as planning only; never represent them as implemented or completed.
 - `Related documentation`: links to sibling or external project documentation.
 - `Parent page`: mandatory link back to the main page.
 - `Document boundary`: information intentionally excluded.
@@ -294,16 +294,16 @@ Adjust the relative path only when required by the actual folder structure.
 
 ## 5. Roadmap documentation
 
-Documentation is updated only after the related development objective has been implemented, validated and closed.
+Documentation may be updated during objective planning/activation and after objective closure. Planning updates must remain strictly separated from implemented current state.
 
 A roadmap main page or subpage must use the applicable main-page or subpage format.
 
 Rules:
 
-- do not add newly created `active` or `pending` objectives during planning activation;
+- newly created `active` or `pending` objectives may be added only to authorized roadmap, planning or pending sections;
+- preserve their evidenced status exactly as `active` or `pending`;
 - preserve existing roadmap sections and tables required by the page format;
-- update a roadmap entry only when closure evidence proves its state changed;
-- completed objectives may be reflected as delivered capabilities, milestones or historical outcomes;
+- completed objectives may be reflected as delivered capabilities, milestones or historical outcomes only when closure evidence exists;
 - `SBM-SUITE/context/COMPLETED_OBJECTIVES.md` is historical closure evidence only and is never a documentation target;
 - branch names and objective IDs must match finalized contexts and closure evidence;
 - documentation paths remain repository-relative;
@@ -468,7 +468,7 @@ Risk scale:
 Rules:
 
 - Never invent tests, counts, coverage or SonarQube results.
-- Planned tests from the current objective are not added during planning activation. After closure, document only tests supported by executed QA evidence.
+- Planned tests may be referenced only in planning or pending-work sections during planning activation. Executed test results belong in QA/current-state sections only when explicit QA evidence exists.
 - Raw reports remain outside documentation.
 - Documentation summarizes evidence from QA contexts.
 
@@ -605,7 +605,7 @@ Rules:
 - AI must not write directly to PostgreSQL.
 - Separate `sbm_docs`, `sbm_contexts` and `sbm_documentation`.
 - Never expose raw vectors or secrets.
-- Planned Tools must not be represented as implemented and are not added to documentation during planning activation.
+- Planned Tools may be documented only in planning or roadmap sections and must never be represented as implemented.
 
 ---
 
@@ -652,7 +652,7 @@ Rules:
 - Keep context and documentation workflows separate.
 - Context upgrades may not modify documentation.
 - Documentation upgrades may not modify contexts.
-- Documentation deployment and upgrade occur only after implementation closure and final context upgrade.
+- Documentation deployment and upgrade may occur after planning activation/context upgrade for planning-only updates, and after implementation closure/final context upgrade for implemented-state updates.
 - Both workflows require manifest, hashes, backup and validation.
 - `project-tree.txt` is context evidence only unless explicitly required by documentation generation.
 
@@ -731,9 +731,9 @@ Required validation:
 12. all files pass before replacement;
 13. backup exists before replacement;
 14. replacement is atomic or fully rolled back.
-15. the related objective has implementation and successful QA closure evidence;
-16. the objective is no longer active or pending in operational contexts;
-17. documentation content is not generated from planning intent alone.
+15. when documenting implemented current state, the related objective has implementation and successful QA closure evidence;
+16. active or pending objectives may be documented only in authorized planning, roadmap or pending-work sections;
+17. planning intent must never be represented as implemented current state.
 
 18. required metadata labels exist exactly once;
 19. metadata labels preserve the required final colon;
@@ -825,7 +825,7 @@ Every documentation export and upgrade workflow must:
 38. Apply no replacement when any global ZIP, manifest, authorization, path or hash validation fails.
 39. Treat backend validation as mandatory even when the LLM reports successful self-validation.
 40. Preserve unchanged content whenever supplied evidence does not justify modification.
-41. Preserve current, completed and deprecated states distinctly; do not introduce newly planned or pending objective content through the final documentation workflow.
+41. Preserve planning, current, completed and deprecated states distinctly; active or pending objective content is allowed only in authorized planning, roadmap or pending-work sections.
 42. Validate parent-page and subpage relationships before replacement.
 43. Validate every documentation path against the authorized source file list.
 
@@ -838,8 +838,8 @@ Every documentation export and upgrade workflow must:
 50. Record `SYS_PROMPT.md` and `FORMAT_CONTEXT.md` in the source package manifest.
 51. Treat workflow contracts as input-only files that cannot appear in `documentation-upgrade.zip`.
 52. Never create or use a backup directory below `SBM-SUITE/context/documentation/`.
-53. Reject documentation generation when the related objective is still active or pending.
-54. Require implementation evidence, successful QA evidence and completed objective closure before documenting the current change.
+53. Allow documentation generation for an `active` or `pending` objective only when every generated change is confined to authorized planning, roadmap or pending-work sections.
+54. Require implementation evidence, successful QA evidence and completed objective closure before documenting the current change as implemented current state.
 55. Treat `SBM-SUITE/context/COMPLETED_OBJECTIVES.md` only as historical closure evidence and never as an output target.
 
 

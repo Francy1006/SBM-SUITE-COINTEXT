@@ -70,7 +70,7 @@ Executed QA evidence dated `2026-08-02` records `65` passed tests, `0` failures,
 - **Git source of truth:** repository content and Git evidence define the current manual workflow state.
 - **Context workflow:** maintains project and global operational context independently from documentation.
 - **Completed-objective history:** completed objectives are removed from operational tables and recorded only in the global completed-objectives register.
-- **Documentation workflow:** runs after closure and maintains complete authorized Markdown replacements.
+- **Documentation workflow:** supports planning-only roadmap updates for `active` or `pending` objectives and implemented-state updates only after validated closure.
 - **Protected contracts:** `SYS_PROMPT.md` and `FORMAT_CONTEXT.md` guide generation but are not upgrade outputs.
 - **Authorized paths:** upgrades may affect only existing files explicitly included in the package allowlist.
 - **Single backup root:** successful context and documentation upgrades use `SBM-SUITE/context/backup/`.
@@ -139,7 +139,7 @@ Exact DP-API, backend and Qdrant ports are not established by the supplied packa
 | 4 | Context upgrade preflight | Reviewed context ZIP | Inspect members, manifest, execution mode, phase, target mappings, hashes and mandatory physical patches | Validated context upgrade request | Client and backend validation |
 | 5 | Context upgrade backend | Validated context ZIP | Back up and apply authorized section operations | Synchronized operational and historical context | Atomic replacement and rollback |
 | 6 | QA workflow | DP-API repository | Run configured pytest, coverage and SonarScanner sequence | `context/qa-results.md` and `coverage.xml` | Exit codes and bounded evidence |
-| 7 | Documentation indexer and exporter | Closed contexts, Git and QA evidence | Index documentation, retrieve relevant documentation/context and build final package | `documentation-package.zip` | Final-state lifecycle gate and rendered contracts |
+| 7 | Documentation indexer and exporter | Validated contexts, Git and QA evidence when applicable | Index documentation, retrieve relevant documentation/context and build the package | `documentation-package.zip` | Planning-only for `active`/`pending`; implemented-state only after closure |
 | 8 | LLM generation | Documentation package | Generate complete authorized replacements | `documentation-upgrade.zip` | Prompt and format contract |
 | 9 | Documentation upgrade | Reviewed documentation ZIP | Validate, back up and replace existing authorized pages | Updated documentation | Hash, metadata, heading, path and rollback checks |
 
@@ -148,7 +148,7 @@ Exact DP-API, backend and Qdrant ports are not established by the supplied packa
 | `qa-results.md` | QA | `qa-check.sh` | Context and documentation deploy | `SBM-SUITE/dp/DP-API/context/qa-results.md` | 1 for closure | Bounded pytest, coverage and SonarScanner evidence |
 | `context-package.zip` | context deploy | Backend exporter | LLM | `SBM-SUITE/context/output/` | 1 | Context evidence package |
 | `context-upgrade.zip` | context upgrade | LLM | Backend validator | `SBM-SUITE/context/input/` | 1 | Authorized context section updates |
-| `documentation-package.zip` | documentation deploy | Backend exporter | LLM | `SBM-SUITE/context/documentation/output/` | 1 | Final documentation evidence and workflow contracts |
+| `documentation-package.zip` | documentation deploy | Backend exporter | LLM | `SBM-SUITE/context/documentation/output/` | 1 | Documentation evidence and workflow contracts |
 | `documentation-upgrade.zip` | documentation upgrade | LLM | Backend validator | `SBM-SUITE/context/documentation/input/` | 1 | Complete authorized Markdown replacements |
 
 | Workflow | Qdrant collection | Source of truth | Generated package | Upgrade output |
@@ -255,6 +255,7 @@ The documentation upgrade validator additionally requires exact metadata labels,
 
 ## 12. Roadmap
 
+- `DP-TEST-001` — `test fix` is `active`, priority `5`, target date `2026-08-06`, branch `BUGFIX-test-fix`; planning only, not implemented.
 - Implement asynchronous workflow orchestration when approved.
 - Add downstream Notion synchronization without changing Git ownership.
 - Expand observability for indexing, retrieval, validation, backup and rollback.
