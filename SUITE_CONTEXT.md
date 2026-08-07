@@ -1,6 +1,6 @@
 # SUITE_CONTEXT.md
 
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-08-06
 >
 > **Purpose**
 >
@@ -58,16 +58,19 @@ Current business scope includes products, materials, services, catalogs, pricing
 | Project | Brand | Primary responsibility | Canonical owner |
 |---|---|---|---|
 | DP-API | Ditaly Pasta | Client-facing business API | Client operations |
+| SBM-MANAGER | SBM | Enterprise web frontend for client and platform interaction | Frontend |
 | SBM-API | SBM | Internal platform API | Platform administration |
+| SBM-DB | SBM | PostgreSQL business schemas and Flyway migrations | Data layer |
 | sbm-ai-assistant | SBM | AI orchestration, RAG, embeddings and Tools | AI-assisted workflows |
 | SBM-SUITE/context | SBM | Global context and documentation contracts | Context governance |
 
-Canonical repository paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Container mounts preserve those brand segments as `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`.
+Canonical repository paths currently evidenced here are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Container mounts preserve those brand segments as `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`. Repository paths for `SBM-MANAGER` and `SBM-DB` remain `N/A` in this document until explicitly evidenced.
 
 ## 5. Applications and services
 
 | Brand | Project | Application or service | Type | Description | Language | Framework | Version | Runtime | Owner |
 |---|---|---|---|---|---|---|---|---|---|
+| SBM | SBM-MANAGER | Enterprise web frontend | web frontend | Web interface consuming DP-API and SBM-API | JavaScript | Vue.js 3 | N/A | N/A | SBM-MANAGER |
 | Ditaly Pasta | DP-API | Client-facing API | API | Business operations for authorized client users | Python | Django REST Framework | N/A | container | DP-API |
 | SBM | SBM-API | Internal platform API | API | Critical, contractual and administrative platform operations | Python | Django REST Framework | N/A | container | SBM-API |
 | SBM | sbm-ai-assistant | AI orchestrator | API / AI service | Intent routing, RAG, embeddings and explicit Tools | Python | FastAPI | N/A | container | sbm-ai-assistant |
@@ -78,6 +81,7 @@ Canonical repository paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` 
 
 | Brand | Project | Category | Technology | Version | Purpose | Status |
 |---|---|---|---|---|---|---|
+| SBM | SBM-MANAGER | web frontend | Vue.js 3 | N/A | Enterprise web interface | active |
 | Ditaly Pasta | DP-API | backend | Python | N/A | API implementation | active |
 | Ditaly Pasta | DP-API | backend framework | Django REST Framework | N/A | REST API | active |
 | SBM | SBM-API | backend | Python | N/A | Internal API implementation | active |
@@ -85,16 +89,111 @@ Canonical repository paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` 
 | SBM | sbm-ai-assistant | backend | Python | N/A | AI orchestration | active |
 | SBM | sbm-ai-assistant | backend framework | FastAPI | N/A | AI API | active |
 | SBM | sbm-ai-assistant | vector database | Qdrant | N/A | Semantic retrieval | active |
+| SBM | SBM-DB | database | PostgreSQL | N/A | Business and platform persistence | active |
+| SBM | SBM-DB | migrations | Flyway | N/A | Versioned business-schema migrations | active |
 | SBM | Shared infrastructure | containers | Docker Compose | N/A | Local orchestration | active |
 | SBM | QA infrastructure | static analysis | SonarQube | N/A | Quality gates | active |
 
 ## 7. Runtime architecture
 
+### Canonical relationship diagram
+
+Legend:
+
+```text
+🟦 Web frontend
+🟪 Mobile frontend
+🟩 API / Backend
+🟨 Middleware / AI
+🟥 Database / Vector database
+🟧 Infrastructure / Migration
+⬜ External channel
+```
+
+```text
+                              ┌───────────────────────────┐
+                              │       USUARIOS SBM        │
+                              └─────────────┬─────────────┘
+                                            │
+                          ┌─────────────────┴─────────────────┐
+                          │                                   │
+                          ▼                                   ▼
+              ┌─────────────────────────┐         ┌─────────────────────────┐
+              │ 🟦 SBM-MANAGER          │         │ ⬜ Slack / otros canales│
+              │ Vue.js 3 · Front Web    │         │ Interfaces aprobadas    │
+              └────────────┬────────────┘         └────────────┬────────────┘
+                           │                                   │
+              ┌────────────┼────────────┐                      │
+              │            │            │                      │
+              ▼            ▼            └──────────────────────┤
+    ┌──────────────────┐  ┌──────────────────┐                 ▼
+    │ 🟩 DP-API        │  │ 🟩 SBM-API       │      ┌──────────────────────────┐
+    │ Django / DRF     │  │ Django / DRF     │      │ 🟨 SBM-AI-ASSISTANT      │
+    │ Client operations│  │ Platform / Admin │      │ FastAPI · AI Middleware │
+    └─────────┬────────┘  └─────────┬────────┘      │ RAG · Agents · Tools    │
+              │                     │               └────────────┬─────────────┘
+              │                     │                            │
+              │                     │                   ┌────────┴─────────┐
+              │                     │                   │                  │
+              │                     │                   │ Tool / REST      │
+              │                     │                   │                  │
+              │                     │                   ▼                  ▼
+              │                     │          ┌────────────────┐  ┌────────────────┐
+              │                     └─────────►│ 🟩 SBM-API     │  │ 🟩 DP-API      │
+              │                                └────────────────┘  └────────────────┘
+              │
+              └─────────────────────┐
+                                    │
+                                    ▼
+                        ┌───────────────────────────┐
+                        │ 🟥 PostgreSQL            │
+                        │ SBM-DB                    │
+                        │                           │
+                        │ ditaly_pasta              │
+                        │ sbm_business              │
+                        │ public                    │
+                        └─────────────▲─────────────┘
+                                      │
+                                      │ schema / migrations
+                                      │
+                        ┌─────────────┴─────────────┐
+                        │ 🟧 Flyway                │
+                        │ SBM-DB                   │
+                        │ Versioned migrations     │
+                        └───────────────────────────┘
+
+
+                    AI / KNOWLEDGE INFRASTRUCTURE
+
+              ┌───────────────────────────┐
+              │ 🟨 SBM-AI-ASSISTANT      │
+              └─────────────┬─────────────┘
+                            │
+                            │ Vector API
+                            ▼
+              ┌───────────────────────────┐
+              │ 🟥 Qdrant                 │
+              │                           │
+              │ sbm_docs                  │
+              │ sbm_contexts              │
+              │ sbm_documentation         │
+              └───────────────────────────┘
+```
+
+Diagram maintenance rules:
+
+- This diagram is a canonical structural view, not a decorative snapshot.
+- Update it whenever a structural change modifies a project, application, frontend, API, middleware, database, vector store, primary integration or ownership boundary.
+- Preserve the semantic type markers and rectangle-based layout when updating it.
+- Do not add planned components as active topology; mark them explicitly as planned or omit them until the relationship is evidenced.
+- Keep the diagram consistent with `Project map`, `Applications and services`, `Integrations and data flows`, `Data architecture` and `Infrastructure and containers`.
+- A non-structural implementation change does not require diagram modification.
+
 Client-facing flow:
 
 ```text
 Client user
-→ approved client channel
+→ SBM-MANAGER or approved client channel
 → DP-API
 → validated domain operation
 → PostgreSQL
@@ -104,7 +203,7 @@ Internal platform flow:
 
 ```text
 Internal SBM user
-→ approved internal channel
+→ SBM-MANAGER or approved internal channel
 → SBM-API
 → platform operation
 → PostgreSQL
@@ -223,6 +322,8 @@ Rules:
 
 | Source | Target | Contract | Purpose | Status |
 |---|---|---|---|---|
+| SBM-MANAGER | DP-API | REST API | Client business operations | active |
+| SBM-MANAGER | SBM-API | REST API | Internal platform operations | active |
 | sbm-ai-assistant | DP-API | Explicit Tool / REST API | AI-assisted client operations | planned |
 | sbm-ai-assistant | SBM-API | Explicit Tool / REST API | AI-assisted internal operations | planned |
 | DP-API | PostgreSQL | ORM / approved data access | Business persistence | active |
@@ -331,6 +432,7 @@ Current deployment principles:
 - Context and documentation upgrades produce one final commit message each.
 - `git status` confirms changed files but not semantic correctness.
 - Structural format changes require manual updates to format contracts.
+- Structural architecture changes must also update the canonical relationship diagram in `## 7. Runtime architecture` and its related inventory tables.
 - Unknown facts, versions, endpoint bodies and QA results must remain `N/A` or unchanged.
 - No unrelated project files may be modified.
 
