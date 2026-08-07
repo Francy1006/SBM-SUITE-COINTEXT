@@ -23,7 +23,7 @@
 7. Do not invent implementation, QA, architecture, deployment or business facts.
 8. When evidence is insufficient, keep the existing content unchanged.
 9. Structural changes require an explicit manual update to this file.
-10. Documentation upgrades use complete Markdown replacements only for authorized files.
+10. Documentation upgrades use complete Markdown replacements only for authorized files, and every generated replacement requires the complete current source snapshot of that exact target in the input package.
 11. Documentation files must remain readable without access to chat history.
 12. Documentation may include active or pending objectives only in authorized planning, roadmap or pending-work sections. Only completed and validated work may appear as implemented current state.
 13. Context files remain the authoritative source for current implementation state.
@@ -83,9 +83,15 @@ Documentation-deploy package requirements:
 3. Fail when any unresolved template token remains.
 4. Include the complete rendered file in `documentation-package.zip` as `SYS_PROMPT.md`.
 5. Include this complete protected contract in `documentation-package.zip` as `FORMAT_CONTEXT.md`.
-6. Record both files in the source package manifest.
-7. Do not require a separate user upload of either workflow file.
-8. Treat both files as input-only contracts for `documentation-upgrade`.
+6. Use Qdrant/RAG chunks only to select relevant documentation candidates; retrieved chunks are not complete source documents.
+7. For every RAG-selected documentation candidate, include the complete current UTF-8 Markdown source snapshot at its exact `documentation/...` archive path.
+8. Fail export when a RAG-selected candidate cannot be mapped to one complete authorized source snapshot.
+9. `documentation-files.txt` must list exactly the complete candidate snapshots included in the package.
+10. Record each candidate snapshot in `manifest.documentation_files` with `archive_path`, `complete=true`, `selected_by_rag=true` and its SHA-256 `content_hash`.
+11. Set `manifest.snapshot_policy` to `rag-selected-complete`.
+12. Record both workflow contract files in the source package manifest.
+13. Do not require a separate user upload of either workflow file.
+14. Treat workflow contracts and packaged source snapshots as input evidence for `documentation-upgrade`; source snapshots are never copied unchanged into the output ZIP.
 
 Required workflow directories:
 
@@ -713,7 +719,7 @@ Rules:
 
 ## 16. Documentation upgrade authorization
 
-The documentation workflow may modify only files explicitly listed in the input manifest and allowed-file list.
+The documentation workflow may modify only files explicitly listed as complete RAG-selected source snapshots in the input manifest and `documentation-files.txt`. RAG chunks alone never authorize a replacement.
 
 Required validation:
 
@@ -737,7 +743,9 @@ Required validation:
 
 18. required metadata labels exist exactly once;
 19. metadata labels preserve the required final colon;
-20. metadata labels remain in the required order for the page type.
+20. metadata labels remain in the required order for the page type;
+21. the input package contains the complete current source snapshot for the exact target path and its hash matches `manifest.documentation_files`;
+22. the replacement is derived from that complete snapshot plus supported change evidence, never reconstructed from RAG chunks.
 
 
 Protected files:
@@ -841,6 +849,13 @@ Every documentation export and upgrade workflow must:
 53. Allow documentation generation for an `active` or `pending` objective only when every generated change is confined to authorized planning, roadmap or pending-work sections.
 54. Require implementation evidence, successful QA evidence and completed objective closure before documenting the current change as implemented current state.
 55. Treat `SBM-SUITE/context/COMPLETED_OBJECTIVES.md` only as historical closure evidence and never as an output target.
+56. Require RAG to select documentation candidates only; never treat retrieved chunks as complete source files.
+57. Require `documentation-deploy` to package the complete current snapshot of every RAG-selected candidate under its exact `documentation/...` path.
+58. Require `manifest.snapshot_policy` to equal `rag-selected-complete`.
+59. Require every `manifest.documentation_files` entry to declare `complete=true`, `selected_by_rag=true` and a SHA-256 `content_hash` matching the packaged snapshot.
+60. Fail export when any RAG-selected candidate lacks a complete authorized source snapshot.
+61. Require every generated documentation replacement to have a corresponding complete source snapshot in the input package; never reconstruct missing sections, tables, metadata or links from RAG chunks.
+62. A lifecycle-only/no-op closure may update QA, validation, roadmap or workflow documentation when supported by closure evidence, but must not introduce implementation-state claims without implementation evidence.
 
 
 ---

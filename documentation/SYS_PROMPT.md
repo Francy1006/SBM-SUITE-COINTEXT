@@ -23,7 +23,7 @@ Use the supplied documentation package to generate only complete, format-complia
 
 For active or pending objectives, update only authorized planning or roadmap content supported by the supplied evidence.
 
-For completed objectives, document completed, tangible and validated implementation.
+For completed objectives, document completed, tangible and validated implementation only when implementation evidence exists. For lifecycle-only/no-op closure, document only supported QA, validation, roadmap or workflow-state changes and do not invent implementation changes.
 
 The output must be safe for direct use by `documentation-upgrade` without manual repair.
 
@@ -60,6 +60,7 @@ git-log.txt
 qa-results.md
 documentation-files.txt
 manifest.json
+complete RAG-selected source snapshots under documentation/...
 ```
 
 Optional structural evidence:
@@ -68,13 +69,13 @@ Optional structural evidence:
 project-tree.txt
 ```
 
-Do not expect every documentation file to be included in full.
+RAG is used only to select candidate documentation. Every candidate listed in `documentation-files.txt` and `manifest.documentation_files` must be included in full under its exact `documentation/...` archive path.
 
-`retrieved-documentation.md` contains relevant documentation chunks selected from Qdrant collection `sbm_documentation`.
+`retrieved-documentation.md` contains relevant documentation chunks selected from Qdrant collection `sbm_documentation`; these chunks identify relevant candidates and provide retrieval evidence, but they are never a substitute for the complete source snapshot.
 
 `retrieved-context.md` contains relevant current global and project context chunks selected from Qdrant collection `sbm_contexts`.
 
-`documentation-files.txt` lists existing authorized documentation files and their repository-relative paths.
+`documentation-files.txt` lists exactly the RAG-selected documentation candidates whose complete source snapshots are packaged and authorized for possible replacement.
 
 `project-tree.txt`, when supplied, is structural evidence only.
 
@@ -91,9 +92,13 @@ Before packaging:
 2. fail when any unresolved template token remains;
 3. include the complete rendered file without renaming it;
 4. include the complete protected `FORMAT_CONTEXT.md`;
-5. keep both files as input-only workflow contracts;
-6. record both files in the source package manifest;
-7. never require the user to upload a separate `SYS_PROMPT.md`.
+5. use RAG retrieval only to select relevant documentation candidates;
+6. include the complete current Markdown source snapshot for every selected candidate at its exact `documentation/...` path;
+7. fail when a selected candidate has no complete authorized snapshot;
+8. write `documentation-files.txt` from exactly the packaged candidate snapshots;
+9. record `snapshot_policy=rag-selected-complete` and complete/hash metadata for every candidate in the source manifest;
+10. keep workflow contracts and source snapshots as input evidence;
+11. never require the user to upload a separate `SYS_PROMPT.md`.
 
 ## Input meaning
 
@@ -123,14 +128,19 @@ qa-results.md
 → executed tests, coverage, SonarQube and validation evidence
 
 documentation-files.txt
-→ existing documentation paths authorized for retrieval and possible update
+→ exact RAG-selected candidate paths whose complete source snapshots are packaged and authorized for possible update
 
 project-tree.txt
 → optional recursive project structure used only as structural evidence
 
 manifest.json
-→ RAG query, filters, sources, chunk counts, authorized files and package metadata
+→ RAG query, filters, sources, chunk counts, complete candidate snapshot metadata and package metadata
+
+documentation/... source snapshots
+→ complete current Markdown for each RAG-selected candidate; authoritative source for preserving unchanged sections, metadata, tables and links when generating a replacement
 ```
+
+The source manifest must declare `snapshot_policy=rag-selected-complete`. Every entry in `manifest.documentation_files` must correspond to a physically packaged complete source snapshot and declare `complete=true`, `selected_by_rag=true` and its SHA-256 `content_hash`.
 
 ## Execution modes
 
@@ -184,20 +194,32 @@ Planning-state documentation does not require objective closure.
 
 ### Closure state
 
-Applies when the related objective is completed.
+Applies when the related objective is completed. Closure may represent completed implementation or lifecycle-only/no-op completion.
 
 Required before documenting implementation as current state:
 
-- the related objective has been implemented;
+- explicit implementation evidence exists for every implementation-state claim;
 - `qa-check.sh` has been executed when applicable;
 - SonarQube validation has completed successfully when applicable;
 - the closing `context-upgrade` has updated the operational contexts;
 - the objective has been removed from active and pending contexts;
 - the objective has been recorded in `COMPLETED_OBJECTIVES.md`.
 
-If closure evidence is missing, do not represent the objective as implemented.
+If closure evidence is missing, do not represent the objective as completed. If closure is lifecycle-only/no-op, QA or workflow documentation may still be updated from explicit evidence, but no implementation-state claim may be introduced.
 
 `COMPLETED_OBJECTIVES.md` is historical closure evidence only and is not an authorized documentation target.
+
+## Complete source snapshot rule
+
+For every documentation candidate:
+
+1. RAG chunks select the candidate.
+2. The packaged `documentation/...` file is the complete current source snapshot.
+3. Use that complete snapshot as the only base for preserving existing headings, metadata, tables, links and unchanged content.
+4. Use Git, QA and current contexts only to decide what may change.
+5. Never reconstruct a missing source section from `retrieved-documentation.md`, RAG chunks, project structure or general knowledge.
+6. If `manifest.documentation_files` declares a candidate but its complete snapshot is absent, incomplete or hash-invalid, treat the input package as invalid and do not generate a replacement for that target.
+
 
 ## Evidence priority
 
@@ -270,10 +292,11 @@ Rules:
 8. Never convert planned, proposed, pending or deprecated content into current implementation.
 9. Never represent tests, coverage, SonarQube, migrations or deployments as completed without explicit evidence.
 10. Every generated statement must be traceable to the supplied package.
+11. Never reconstruct a candidate document from retrieved chunks; a complete hash-valid packaged source snapshot is mandatory before generating its replacement.
 
 ## Allowed target files
 
-Only files explicitly listed in the supplied manifest and `documentation-files.txt` may be generated.
+Only files explicitly listed in the supplied manifest and `documentation-files.txt`, and physically included as complete source snapshots, may be generated.
 
 Every target must:
 
@@ -374,7 +397,7 @@ Before generating any documentation replacement, you must:
 3. apply the corresponding required structure, exact heading names, exact heading order, metadata block, required tables, column order, links, path rules and domain-specific constraints;
 4. validate the literal metadata labels `> **Last updated:**`, `> **Purpose:**`, `> **Source of truth:**` and, for subpages, `> **Parent page:**`;
 5. preserve every required section even when its content remains unchanged;
-6. preserve the complete existing file when the supplied evidence does not justify changing a section;
+6. read the complete packaged source snapshot for the exact target and preserve all content not justified for change;
 7. verify that no required heading is missing, renamed, duplicated or reordered;
 8. verify that no unauthorized top-level heading was introduced;
 9. verify all required tables and exact column orders applicable to the page type;
@@ -401,17 +424,19 @@ Complete these steps in order before creating the ZIP:
 1. Read `FORMAT_CONTEXT.md` completely.
 2. Read the source `manifest.json`.
 3. Separate input evidence, protected files, authorized documentation targets and allowed output metadata files.
-4. Determine the exact document type for every authorized target.
-5. Resolve every required heading, heading order, metadata block, required table, table column order, parent link, subpage link and domain-specific rule from `FORMAT_CONTEXT.md`.
-6. Read the complete existing target file when available.
-7. Generate a complete replacement in memory.
-8. Preserve every required section and all unchanged content not affected by supported evidence.
-9. Validate the complete replacement against every applicable `FORMAT_CONTEXT.md` rule.
-10. Exclude any documentation file that fails validation.
-11. Build `manifest.json` from the final valid ZIP contents only.
-12. Calculate SHA-256 hashes from the exact final file bytes.
-13. Revalidate ZIP paths, manifest entries, hashes and file contents.
-14. Return `documentation-upgrade.zip` only after every global validation passes.
+4. Validate `manifest.snapshot_policy` equals `rag-selected-complete`.
+5. Validate that every candidate in `documentation-files.txt` has exactly one `manifest.documentation_files` entry and one physically packaged complete source snapshot with a matching SHA-256 hash.
+6. Determine the exact document type for every authorized target.
+7. Resolve every required heading, heading order, metadata block, required table, table column order, parent link, subpage link and domain-specific rule from `FORMAT_CONTEXT.md`.
+8. Read the complete packaged source snapshot for the exact target before generating any replacement.
+9. Generate a complete replacement in memory using that snapshot as the preservation base and change evidence only for justified modifications.
+10. Preserve every required section and all unchanged content not affected by supported evidence.
+11. Validate the complete replacement against every applicable `FORMAT_CONTEXT.md` rule.
+12. Exclude any documentation file that fails validation.
+13. Build `manifest.json` from the final valid ZIP contents only.
+14. Calculate SHA-256 hashes from the exact final file bytes.
+15. Revalidate ZIP paths, manifest entries, hashes and file contents.
+16. Return `documentation-upgrade.zip` only after every global validation passes.
 
 Do not skip, reorder or partially execute this procedure.
 
@@ -436,6 +461,8 @@ project-tree.txt
 
 The source manifest is evidence only. Never copy its `allowed_files`,
 `updated_files`, paths or hashes into the output manifest.
+
+Complete `documentation/...` source snapshots in the input package are also input evidence. A generated replacement may use the same `documentation/...` ZIP path in `documentation-upgrade.zip`, but its content must be newly generated from the complete snapshot plus supported evidence; never copy an unchanged source snapshot into the output ZIP.
 
 ## Documentation replacement model
 
@@ -921,6 +948,10 @@ Before generating the ZIP, verify:
 29. every source target is below `SBM-SUITE/context/documentation/pages/` and every ZIP target preserves `documentation/pages/`;
 30. the applying workflow uses only `SBM-SUITE/context/backup/` for backups;
 31. lifecycle state is preserved exactly and planning is never represented as completed implementation;
+32. source `manifest.snapshot_policy` equals `rag-selected-complete`;
+33. every generated documentation target had exactly one complete packaged source snapshot declared by `manifest.documentation_files`;
+34. every source snapshot hash matched before generation;
+35. no replacement was reconstructed from RAG chunks without its complete source snapshot;
 
 If any file-level validation fails, omit that documentation file and report the exact limitation in `EXECUTIVE_README.md`.
 

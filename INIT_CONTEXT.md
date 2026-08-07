@@ -330,19 +330,30 @@ Confirme que SonarQube está habilitado y disponible. Responda "sí" para contin
 ```
 
 4. Do not advance until the user explicitly confirms it.
-5. After confirmation, provide the canonical repository path and exactly one command:
+5. After confirmation, provide the repository path, command and upload request together in one message using exactly this structure:
+
+````text
+Ruta:
+
+`<project-repository>/`
 
 ```bash
 ./scripts/qa-check.sh
 ```
 
-6. Require the user to execute it locally.
-7. Request the generated evidence file:
+Ejecute el comando y suba el archivo generado:
+
+`<project-repository>/context/qa-results.md`
+````
+
+For `DP-API`, when the canonical path in current evidence is `SBM-SUITE/DP/DP-API/`, the same message must therefore contain that exact path and:
 
 ```text
-<project-repository>/context/qa-results.md
+SBM-SUITE/DP/DP-API/context/qa-results.md
 ```
 
+6. Require the user to execute it locally.
+7. Do not split the repository path, QA command and generated-file request across separate assistant messages.
 8. Accept pasted output only when the generated file cannot be supplied, but prefer `qa-results.md`.
 9. Validate at minimum:
 
@@ -553,15 +564,20 @@ Target date: <YYYY-MM-DD|N/A>
 ```
 
 9. Do not generate commands until the user explicitly confirms.
-10. After confirmation, provide one self-contained command block only. It must:
-    - validate a clean Git worktree;
-    - update `main` using fast-forward only;
-    - stop when `main` changed and require a new `context.zip`;
-    - create the proposed branch;
-    - execute `context-deploy.sh`.
-11. Build the third `context-deploy.sh` argument as one structured literal prompt containing objective, status, priority, target date and branch.
+10. After confirmation, ask exactly:
 
-Command template:
+```text
+EJECUCIÓN
+
+1.- CMD con GIT (rama nueva)
+2.- CMD sin GIT (rama actual)
+```
+
+11. Return only the command block for the selected option.
+12. For a newly created objective, use the branch already shown and confirmed in the objective preview. Do not ask for a different branch.
+13. Build the optional third `context-deploy.sh` argument as one structured literal prompt containing objective, status, priority, target date and branch.
+
+For `CMD con GIT (rama nueva)`, use:
 
 ```bash
 set -euo pipefail
@@ -584,6 +600,14 @@ after_pull="$(git rev-parse HEAD)"
 git checkout -b <branch>
 ./scripts/context-deploy.sh planning-activation <objective_id> "Objetivo: <literal objective>; Estado: <active|pending>; Prioridad: <0-5>; Target date: <YYYY-MM-DD|N/A>; Branch: <branch>"
 ```
+
+For `CMD sin GIT (rama actual)`, use:
+
+```bash
+./scripts/context-deploy.sh planning-activation <objective_id> "Objetivo: <literal objective>; Estado: <active|pending>; Prioridad: <0-5>; Target date: <YYYY-MM-DD|N/A>; Branch: <branch>"
+```
+
+`user_prompt` is optional at the script contract level. The creation workflow may include the structured third argument because it carries the new objective data required by this guided flow.
 
 Do not request or require `qa-check.sh` for objective creation.
 
@@ -614,24 +638,132 @@ GESTIONAR OBJETIVO
 4.- Volver
 ```
 
-5. For closure, determine whether current QA evidence and `qa-check.sh` apply. When applicable, display:
+5. For closure, determine whether QA applies from the selected project's current QA contract and whether `scripts/qa-check.sh` exists.
+6. When QA applies, closure requires a QA execution that validates the current project state. This requirement applies even when the selected objective introduced no source-code changes.
+7. Historical QA evidence generated before the current objective creation/activation must be treated as baseline only and must not satisfy objective closure.
+8. If valid QA evidence for the current closure flow is not already supplied, do not terminate or return to the menu. Continue the same closure workflow by asking exactly:
 
 ```text
-ADVERTENCIA QA
-Antes de cerrar este objetivo, ejecute ./scripts/qa-check.sh y conserve context/qa-results.md como evidencia vigente.
+Confirme que SonarQube está habilitado y disponible. Responda "sí" para continuar.
 ```
 
-6. Do not offer closure when required tests, coverage, scanner execution or server-side Quality Gate are missing or failed.
-7. Before the command, show a concise action preview and require explicit confirmation.
-8. After confirmation, return one self-contained command block that validates Git, checks out the objective branch and runs the applicable lifecycle command.
+9. Do not advance until the user explicitly confirms it.
+10. After confirmation, provide the repository path, QA command and upload request together in one message:
+
+````text
+Ruta:
+
+`<project-repository>/`
+
+```bash
+./scripts/qa-check.sh
+```
+
+Ejecute el comando y suba el archivo generado:
+
+`<project-repository>/context/qa-results.md`
+````
+
+11. Read the newly supplied `qa-results.md` and validate at minimum:
+    - overall status;
+    - tests collected, passed and failed;
+    - coverage result;
+    - SonarScanner exit/result;
+    - server-side Quality Gate when required by the current project QA contract;
+    - evidence timestamp.
+12. If any required QA gate fails or remains unavailable, keep closure blocked and report the exact failed or missing gate. Do not generate `implementation-closure`.
+13. If all required QA gates pass, automatically resume the same selected objective closure flow. Do not ask the user to select the objective or closure action again.
+14. Do not block closure only because `git-diff.patch`, `changed-files.txt` or Git implementation evidence is empty. A lifecycle-only/no-op objective may close without code changes when:
+    - the selected objective exists in the current operational context;
+    - current QA passed;
+    - the user explicitly selected closure;
+    - no unsupported implementation change is claimed.
+15. For lifecycle-only/no-op closure, `context-upgrade.zip` must still synchronize the lifecycle using the five required patches:
+    - global `PROJECT_CONTEXT.md`;
+    - project `PROJECT_CONTEXT.md`;
+    - global `COMPLETED_OBJECTIVES.md`;
+    - global `QA_CONTEXT.md`;
+    - project `QA_CONTEXT.md`.
+16. Before the closure command, show a concise action preview and require explicit confirmation.
+17. The branch must come from the selected objective record in the loaded context. Never ask for it, invent it or replace it with another branch.
+18. For `Activate pending` and `Closure`, after confirmation ask exactly:
+
+```text
+EJECUCIÓN
+
+1.- CMD con GIT (rama nueva)
+2.- CMD sin GIT (rama actual)
+```
+
+19. Return only the command block for the selected option.
+20. For `Progress`, use the current objective branch from context and provide only the applicable lifecycle command unless the user explicitly requests Git branch handling.
 
 Action mapping:
 
 ```text
-Activate pending → planning-activation <objective_id> "<structured current objective prompt>"
-Progress         → implementation-progress <objective_id>
-Closure          → implementation-closure <objective_id>
+Activate pending → planning-activation <objective_id> ["<structured current objective prompt>"]
+Progress         → implementation-progress <objective_id> ["<user_prompt>"]
+Closure          → implementation-closure <objective_id> ["<user_prompt>"]
 ```
+
+For `Activate pending` with `CMD con GIT (rama nueva)`:
+
+```bash
+set -euo pipefail
+
+[[ -z "$(git status --short)" ]] || {
+  echo "ERROR: El repositorio contiene cambios locales."
+  exit 1
+}
+
+git checkout main
+before_pull="$(git rev-parse HEAD)"
+git pull --ff-only origin main
+after_pull="$(git rev-parse HEAD)"
+
+[[ "${before_pull}" == "${after_pull}" ]] || {
+  echo "MAIN_UPDATED: revise los cambios, regenere context.zip y reinicie el flujo."
+  exit 1
+}
+
+git checkout -b <objective-branch-from-context>
+./scripts/context-deploy.sh planning-activation <objective_id> "<structured current objective prompt>"
+```
+
+For `Activate pending` with `CMD sin GIT (rama actual)`:
+
+```bash
+./scripts/context-deploy.sh planning-activation <objective_id> "<structured current objective prompt>"
+```
+
+For `Closure` with `CMD con GIT (rama nueva)`, use the branch recorded in the selected objective context; if that local branch already exists, check it out instead of creating a duplicate:
+
+```bash
+set -euo pipefail
+
+[[ -z "$(git status --short)" ]] || {
+  echo "ERROR: El repositorio contiene cambios locales."
+  exit 1
+}
+
+branch="<objective-branch-from-context>"
+
+if git show-ref --verify --quiet "refs/heads/${branch}"; then
+  git checkout "${branch}"
+else
+  git checkout -b "${branch}"
+fi
+
+./scripts/context-deploy.sh implementation-closure <objective_id>
+```
+
+For `Closure` with `CMD sin GIT (rama actual)`:
+
+```bash
+./scripts/context-deploy.sh implementation-closure <objective_id>
+```
+
+The optional `user_prompt` may be appended only when the user supplied one or the workflow explicitly needs a structured prompt.
 
 #### Context option 4 — Aplicar context-upgrade.zip
 
@@ -745,9 +877,11 @@ before suggesting a commit.
 
 Lifecycle continuation:
 
-- after `planning-activation` + successful `context-upgrade.sh`, the objective is created or activated; continue with implementation and do not start documentation;
-- after `implementation-progress` + successful `context-upgrade.sh`, continue with implementation and do not start documentation;
-- documentation is allowed only after `implementation-closure` + successful closing `context-upgrade.sh`.
+- after `planning-activation` + successful `context-upgrade.sh`, continue the objective creation/activation flow with `documentation-deploy.sh` and `documentation-upgrade.sh`;
+- during that planning documentation stage, an `active` or `pending` objective may appear only in authorized planning, roadmap or pending-work sections and must never be represented as implemented, validated or completed;
+- after successful planning documentation upgrade, preserve the selected objective status exactly (`active` or `pending`); begin implementation only when the objective is `active`;
+- after `implementation-progress` + successful `context-upgrade.sh`, continue implementation; do not represent progress as completed implementation;
+- after `implementation-closure` + successful closing `context-upgrade.sh`, run final documentation to reconcile implemented/current/deprecated state from closure and QA evidence.
 
 ### Option 5 — Documentación
 
@@ -763,25 +897,23 @@ Then:
 
 1. List projects detected in current evidence.
 2. Ask the user to select the project.
-3. Verify that the related objective is closed: it is absent from active/pending objectives and present in `COMPLETED_OBJECTIVES.md`.
-4. If the objective is active or pending, stop and return to implementation; do not run documentation.
-5. Locate its `scripts/documentation-deploy.sh` path.
-6. Apply the Git cleanliness and updated-main preflight when documentation changes are part of a development branch.
-7. Provide:
+3. Determine the related objective lifecycle state from current contexts.
+4. If the objective is `active` or `pending`, treat this as planning documentation:
+   - allow only authorized planning, roadmap or pending-work changes;
+   - preserve the objective status exactly;
+   - never claim implementation, QA completion or closure.
+5. If the objective is completed, treat this as final/closure documentation and require the applicable implementation and QA closure evidence before representing the change as current state.
+6. Locate its `scripts/documentation-deploy.sh` path.
+7. Apply the Git cleanliness and updated-main preflight only when the selected execution path uses Git.
+8. Provide:
 
 ```bash
 ./scripts/documentation-deploy.sh
 ```
 
-After execution, request:
+After execution, request the generated package and response required by the current documentation workflow. Prefer the package as the authoritative bundled input when it already contains the rendered `SYS_PROMPT.md` and `FORMAT_CONTEXT.md`.
 
-```text
-SBM-SUITE/context/documentation/output/documentation-export-response.json
-SBM-SUITE/context/documentation/output/documentation-package.zip
-SBM-SUITE/context/documentation/output/SYS_PROMPT.md
-```
-
-Read the supplied documentation `SYS_PROMPT.md` as authoritative.
+Read the supplied or embedded documentation `SYS_PROMPT.md` as authoritative.
 
 Generate exactly the ZIP filename required by that contract. The user places it in the documentation input directory defined by the current scripts and then executes:
 
@@ -859,13 +991,19 @@ Example presentation:
 - Never claim local execution.
 - Never infer a successful Git, QA, context or documentation operation.
 - Before any SonarQube-backed QA execution, require explicit confirmation that SonarQube is enabled and available.
+- When objective closure requires missing or stale QA evidence, run the QA flow inside the same closure interaction and resume closure automatically after successful validation.
+- QA closure validates the current project state even when the objective introduced no source-code changes.
+- A lifecycle-only/no-op objective may close with empty Git change evidence after successful current QA; closure must still synchronize both project contexts, `COMPLETED_OBJECTIVES.md` and both QA contexts.
 - Never advance after an error.
 - Never ask again for information already supplied in the current conversation.
 - Distinguish current evidence from plans and examples.
 - When presenting objectives, always include `Objective ID`.
 - When generating an objective ID, validate it against active, pending, completed and cancelled records.
-- The final output of objective creation is the exact `planning-activation` command.
-- The final output of objective management is the exact applicable lifecycle command.
+- For objective creation/activation and closure, offer `CMD con GIT (rama nueva)` and `CMD sin GIT (rama actual)` before returning the command.
+- For existing objectives, obtain the branch from the selected objective context; never ask for or invent it.
+- For a newly created objective, use only the branch already generated and explicitly confirmed in the creation preview.
+- The final output of objective creation is the exact `planning-activation` command for the selected execution mode.
+- The final output of objective management is the exact applicable lifecycle command for the selected execution mode.
 
 ## 7. Return to menu
 

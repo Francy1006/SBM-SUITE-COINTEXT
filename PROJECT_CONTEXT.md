@@ -46,7 +46,6 @@ SBM-SUITE/context
 
 | ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---|---:|---|---|---|
-| DP-TEST-001 | DP-API | test fix | active | 5 | 2026-08-06 | BUGFIX-test-fix | N/A |
 | OBJ-CTX-001 | SBM-SUITE | Validate and stabilize the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/SBM-Suite/` |
 
 Rules:

@@ -18,7 +18,7 @@ objective_id={{OBJECTIVE_ID}}
 
 ## Objective
 
-Use the supplied RAG package and, when present, the explicit user-guided objective to generate only section-level patches for authorized contexts and README files. Support planning activation, implementation progress and objective closure after validated implementation.
+Use the supplied RAG package and, when present, the explicit user-guided objective to generate only section-level patches for authorized contexts and README files. Support planning activation, implementation progress and objective closure after validation of the current project state. Closure may represent either completed implementation or a lifecycle-only/no-op objective with no source-code change.
 
 Do not generate complete context or README files.
 
@@ -179,7 +179,17 @@ Required behavior:
 
 ### implementation-closure
 
-Use after development and successful QA validation.
+Use after successful validation of the current project state.
+
+The closure may be:
+
+```text
+implementation closure
+→ the objective introduced evidenced implementation changes
+
+lifecycle-only / no-op closure
+→ the objective introduced no source-code or implementation change
+```
 
 Required behavior:
 
@@ -189,9 +199,15 @@ Required behavior:
 - require `patches/project-context.json`;
 - require `patches/global-qa-context.json`;
 - require `patches/project-qa-context.json`;
-- use Git diff, changed files and `qa-results.md` as primary evidence;
-- require explicit implementation evidence;
-- require successful QA evidence;
+- use the current objective context, Git evidence when present and `qa-results.md` as primary evidence;
+- require explicit implementation evidence only when implementation changes are claimed;
+- allow an empty `git-diff.patch` and empty `changed-files.txt` for lifecycle-only/no-op closure when:
+  - the requested `objective_id` exists in the current project/global operational context;
+  - `lifecycle_phase` is explicitly `implementation-closure`;
+  - current QA evidence is successful;
+  - no source-code, runtime, API, database, architecture or other implementation change is claimed;
+- never invent implementation evidence merely to satisfy closure;
+- require successful current QA evidence;
 - require explicit closure for the requested `objective_id`;
 - remove only the requested `objective_id` from operational objective sections;
 - preserve every other objective row;
@@ -202,6 +218,21 @@ Required behavior:
 - generate the proposed commit message;
 - leave documentation-page updates for the separate documentation workflow.
 
+
+
+### Closure patch invariant
+
+Even when `git-diff.patch` and `changed-files.txt` are empty, a valid lifecycle-only/no-op `implementation-closure` must still generate the five lifecycle patches when complete source snapshots are available:
+
+```text
+patches/global-project-context.json
+patches/project-context.json
+patches/completed-objectives.json
+patches/global-qa-context.json
+patches/project-qa-context.json
+```
+
+These patches represent objective lifecycle and QA synchronization, not implementation changes.
 
 ## Evidence priority
 
@@ -230,7 +261,7 @@ Required behavior:
 8. git-log.txt
 ```
 
-Do not infer completed changes from RAG context, project structure or the additional user prompt alone.
+Do not infer completed implementation changes from RAG context, project structure or the additional user prompt alone. For lifecycle-only/no-op closure, the current operational objective record plus explicit `implementation-closure` and successful current QA may support lifecycle state transition patches without implying any implementation change.
 
 Identify:
 
@@ -631,7 +662,10 @@ Objective creation rules:
 
 Objective closure rules:
 
-- closure requires implementation evidence plus successful QA evidence;
+- closure always requires explicit closure plus successful current QA evidence;
+- implementation evidence is required only when the objective claims implementation changes;
+- lifecycle-only/no-op closure is valid with an empty Git diff when the objective exists in current operational context, `implementation-closure` is explicit and current QA passes;
+- lifecycle-only/no-op closure must not add or modify implemented behavior, API, runtime, database, architecture or README claims unless separately evidenced;
 - move the objective out of both project and global operational objective sections;
 - append the completed record only to `SBM-SUITE/context/COMPLETED_OBJECTIVES.md`;
 - never create a project-level completed-objectives file;
@@ -1292,7 +1326,7 @@ Before returning `context-upgrade.zip`, verify:
 24. no project-level `COMPLETED_OBJECTIVES.md` is generated;
 25. `planning-activation` requires `USER_PROMPT.md` and forbids `patches/completed-objectives.json`;
 26. `implementation-progress` forbids `patches/completed-objectives.json` and objective closure;
-27. `implementation-closure` includes `patches/completed-objectives.json`, `patches/global-project-context.json`, `patches/project-context.json`, `patches/global-qa-context.json` and `patches/project-qa-context.json`, with implementation evidence, successful QA and explicit closure for exactly `objective_id`;
+27. `implementation-closure` includes `patches/completed-objectives.json`, `patches/global-project-context.json`, `patches/project-context.json`, `patches/global-qa-context.json` and `patches/project-qa-context.json`, with successful current QA and explicit closure for exactly `objective_id`; implementation evidence is additionally required only when implementation changes are claimed; lifecycle-only/no-op closure may use empty Git change evidence;
 28. `implementation-closure` manifest contains `qa.status` equal to `passed` or `success`, supported by explicit successful `qa-results.md` evidence;
 29. every `replace_section` preserves unrelated rows and no partial table is included;
 30. `append_to_section` appears only in an explicitly authorized historical target;

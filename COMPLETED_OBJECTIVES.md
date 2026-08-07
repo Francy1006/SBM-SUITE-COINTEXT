@@ -47,6 +47,7 @@ Rules:
 | Objective ID | Project | Objective | Final status | Priority | Branch | Started | Completed | Summary | Validation | Documentation | Proposed commit |
 |---|---|---|---|---:|---|---|---|---|---|---|---|
 | DP-QA-001 | DP-API | Define and implement the complete QA procedure for DP-API | completed | 5 | `FEATURE-implements-qa-procedure` | N/A | 2026-08-06 | Implemented lifecycle-aware QA evidence generation, contract preflight and synchronized context closure. | 65 tests passed; 88% configured pytest coverage; SonarScanner exit code 0 with successful analysis and execution. | `context/documentation/pages/QA & Testing/`; `context/documentation/pages/Development Roadmap/` | `test(qa): implement lifecycle-aware qa workflow` |
+| DP-TEST-001 | DP-API | test fix | completed | 5 | `BUGFIX-test-fix` | N/A | 2026-08-07 | Lifecycle-only/no-op closure; no Git changes or implementation changes were detected. | 65 tests passed; 0 failed; 88% configured pytest coverage; SonarScanner exit code 0; `ANALYSIS SUCCESSFUL`; `EXECUTION SUCCESS`; server-side Quality Gate `OK`. | N/A | `chore(dp-api): close DP-TEST-001 lifecycle` |
 
 ## 2. Document boundary
 

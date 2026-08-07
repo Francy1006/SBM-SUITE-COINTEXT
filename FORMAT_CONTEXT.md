@@ -187,7 +187,9 @@ Rules:
 - Do not rewrite unrelated historical records.
 - This file is excluded from the operational development context used by Codex.
 - Allowed final statuses: `completed`, `cancelled`.
-- A completed objective requires explicit implementation evidence and successful QA evidence.
+- A completed objective requires explicit closure and successful current QA evidence.
+- Explicit implementation evidence is required only when the objective claims source-code, runtime, API, database, architecture or other implementation changes.
+- A lifecycle-only or no-op objective may close with an empty Git diff when the objective exists in the current operational context, the requested lifecycle phase is `implementation-closure`, current QA passes, and no unsupported implementation claim is introduced.
 - Objective closure must also remove the objective from both project and global operational objective sections and update both project and global QA contexts in the same upgrade.
 - `patches/completed-objectives.json` is allowed only in `implementation-closure`.
 - `patches/completed-objectives.json` must contain exactly one operation targeting `## 1. Completed objectives by project`.
@@ -1040,7 +1042,7 @@ Every context export and upgrade workflow must:
 69. Require a non-empty `objective_id` for every lifecycle phase.
 70. Require `planning-activation` to include `USER_PROMPT.md` and prohibit `patches/completed-objectives.json`.
 71. Require `implementation-progress` to prohibit `patches/completed-objectives.json` and objective closure.
-72. Require `implementation-closure` to include `patches/completed-objectives.json`, `patches/global-project-context.json`, `patches/project-context.json`, `patches/global-qa-context.json` and `patches/project-qa-context.json`, plus implementation evidence, successful QA and explicit closure.
+72. Require `implementation-closure` to include `patches/completed-objectives.json`, `patches/global-project-context.json`, `patches/project-context.json`, `patches/global-qa-context.json` and `patches/project-qa-context.json`, plus successful current QA and explicit closure. Require implementation evidence only when implementation changes are claimed; allow lifecycle-only or no-op closure with an empty Git diff when the objective exists in the current operational context and no implementation claim is generated.
 73. During closure, remove only the requested `objective_id`, preserve every other objective and append exactly that ID to `COMPLETED_OBJECTIVES.md`.
 74. Require both closure QA patches to use explicit successful `qa-results.md` evidence and preserve every unrelated project summary, test row and current QA record.
 75. Require `replace_section` to return the complete section, preserve all unrelated rows and reject partial tables.

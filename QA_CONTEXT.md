@@ -68,7 +68,7 @@ A gate may be bypassed only through a documented accepted exception.
 
 | Project | QA context | Test count | Passed | Failed | Coverage | SonarQube status | Last execution | Overall risk | Evidence |
 |---|---|---:|---:|---:|---|---|---|---:|---|
-| DP-API | `SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md` | 65 | 65 | 0 | 88% | analysis successful | 2026-08-02 | 3 | `qa-results.md`: pytest and SonarScanner exit code 0 |
+| DP-API | `SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md` | 65 | 65 | 0 | 88% | Quality Gate OK | 2026-08-07 | 3 | `qa-results.md`: 65 tests passed; coverage 88%; SonarScanner exit code 0; Quality Gate OK |
 | SBM-API | `SBM-SUITE/sbm/SBM-API/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
 | SBM-MANAGER | `SBM-SUITE/sbm/SBM-MANAGER/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
 | SBM-DB | `SBM-SUITE/sbm/SBM-DB/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 4 | Database QA context pending |
@@ -352,12 +352,13 @@ Current suite QA state:
 
 ```text
 Status: PARTIALLY VALIDATED
-Reason: DP-API supplied successful test, coverage and SonarScanner execution evidence; other projects and transversal gates remain incomplete.
+Reason: DP-API supplied successful current test, coverage, SonarScanner execution and server-side Quality Gate evidence; other projects and transversal gates remain incomplete.
 ```
 
 Verified DP-API closure evidence:
 
 ```text
+Generated at: 2026-08-07T04:29:30Z
 65 tests passed
 0 tests failed
 88% configured pytest coverage
@@ -365,9 +366,10 @@ coverage.xml generated
 SonarScanner exit code 0
 ANALYSIS SUCCESSFUL
 EXECUTION SUCCESS
+Quality Gate: OK
 ```
 
-The supplied log does not contain a server-side Quality Gate result for this run. Tenant isolation, object permissions, cross-project integration, deployment and database compatibility remain outside the validated scope.
+Tenant isolation, object permissions, cross-project integration, deployment and database compatibility remain outside the validated scope.
 
 ## 17. Pending QA work
 

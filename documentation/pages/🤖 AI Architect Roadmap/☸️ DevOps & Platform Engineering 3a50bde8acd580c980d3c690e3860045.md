@@ -1,6 +1,6 @@
 # ☸️ DevOps & Platform Engineering
 
-> **Last updated:** 2026-08-06
+> **Last updated:** 2026-08-07
 >
 > **Purpose:**
 >
@@ -31,22 +31,18 @@ This page covers:
 - shared backups, atomic replacement and rollback;
 - current validation boundaries.
 
-It does not certify production deployment, cloud or Kubernetes execution, a server-side SonarQube Quality Gate result, tenant isolation, object permissions, database compatibility, migration execution or Notion synchronization.
+It does not certify production deployment, cloud or Kubernetes execution, tenant isolation, object permissions, database compatibility, migration execution or Notion synchronization.
 
 ## 3. Current state
 
-The supplied Git evidence identifies changes in:
+The supplied Git evidence for the current closure identifies changes in:
 
-- `.gitignore`;
-- `README.md`;
-- `context/DEPLOY_CONTEXT.md`;
 - `context/PROJECT_CONTEXT.md`;
-- `context/QA_CONTEXT.md`;
-- `scripts/context-deploy.sh`;
-- `scripts/context-upgrade.sh`;
-- `scripts/qa-check.sh`.
+- `context/QA_CONTEXT.md`.
 
-The evidence-based QA procedure and lifecycle-aware context workflow covered by `DP-QA-001` are implemented and closed. The reviewed context upgrade completed before this final documentation cycle, synchronized project and global context state, and moved the completed objective out of operational objective sections.
+The evidence-based QA procedure and lifecycle-aware context workflow covered by `DP-QA-001` remain implemented and closed.
+
+For `DP-TEST-001`, the current evidence supports a lifecycle-only/no-op closure: the objective was removed from the project active-objective section and project QA context now records explicit closure evidence. No source-code, runtime, API, database or other implementation change is evidenced or claimed for this objective.
 
 Current workflow behavior includes:
 
@@ -59,9 +55,9 @@ Current workflow behavior includes:
 - mandatory project/global objective and QA synchronization during closure;
 - final documentation deployment only after successful QA and context closure.
 
-The current documentation deployment completed for `dp-api`, indexed `28` documentation sources and `3354` chunks in `sbm_documentation`, and reported no errors.
+The current documentation deployment completed for `dp-api`, indexed `28` documentation sources and `3390` chunks in `sbm_documentation`, and reported no errors.
 
-Executed QA evidence dated `2026-08-02` records `65` passed tests, `0` failures, `88%` total configured pytest coverage, successful `coverage.xml` generation, SonarScanner exit code `0`, `ANALYSIS SUCCESSFUL`, `EXECUTION SUCCESS` and `40` indexed Python files.
+Executed QA evidence generated on `2026-08-07` records `65` collected and passed tests, `0` failures, `88%` total configured pytest coverage, successful `coverage.xml` generation, SonarScanner exit code `0`, `ANALYSIS SUCCESSFUL`, `EXECUTION SUCCESS`, server-side Quality Gate `OK` and `40` indexed Python files.
 
 ## 4. Core concepts
 
@@ -76,6 +72,7 @@ Executed QA evidence dated `2026-08-02` records `65` passed tests, `0` failures,
 - **Single backup root:** successful context and documentation upgrades use `SBM-SUITE/context/backup/`.
 - **Atomic replacement:** validated files are backed up and replaced as one controlled operation, with rollback on application failure.
 - **Evidence-first generation:** unsupported claims are omitted rather than inferred.
+- **Lifecycle-only/no-op closure:** an objective may be validated and closed without an implementation-state claim when current evidence explicitly shows no implementation change and QA validates the current project state.
 
 ## 5. Architecture or operating model
 
@@ -222,11 +219,11 @@ Validated documentation deployment evidence:
 - workflow: `documentation-deploy`;
 - status: `completed`;
 - indexed documentation sources: `28`;
-- indexed documentation chunks: `3354`;
+- indexed documentation chunks: `3390`;
 - collection: `sbm_documentation`;
 - deployment errors: none reported.
 
-Validated `DP-QA-001` closure evidence dated `2026-08-02`:
+Validated `DP-TEST-001` lifecycle-only/no-op closure evidence generated on `2026-08-07`:
 
 - configured pytest scope: `65` collected and `65` passed;
 - failed tests: `0`;
@@ -236,15 +233,19 @@ Validated `DP-QA-001` closure evidence dated `2026-08-02`:
 - SonarScanner exit code: `0`;
 - indexed Python files: `40`;
 - Sonar analysis: `ANALYSIS SUCCESSFUL`;
-- SonarScanner execution: `EXECUTION SUCCESS`.
+- SonarScanner execution: `EXECUTION SUCCESS`;
+- server-side Quality Gate: `OK`;
+- implementation change evidenced for `DP-TEST-001`: none.
 
-The scanner output proves successful analysis execution and upload. It does not include a server-side Quality Gate result for this run.
+The validation applies to the configured QA scope and supports lifecycle closure without asserting a source-code or runtime change.
+
+Historical `DP-QA-001` evidence dated `2026-08-02` remains valid for its recorded scope; that earlier scanner output did not contain a server-side Quality Gate result.
 
 The documentation upgrade validator additionally requires exact metadata labels, exact level-two heading order, authorized existing paths, matching manifest lists and valid SHA-256 hashes.
 
 ## 11. Known limitations
 
-- The supplied scanner log does not include a server-side Quality Gate result.
+- The `2026-08-07` QA run records server-side Quality Gate `OK`; this result applies only to that configured QA execution.
 - Tenant isolation, object permissions, production readiness, deployment and database compatibility remain outside the validated QA scope.
 - No migration or production deployment execution is evidenced.
 - Exact runtime ports for DP-API, the documentation backend and Qdrant were not established by this package.
@@ -255,7 +256,6 @@ The documentation upgrade validator additionally requires exact metadata labels,
 
 ## 12. Roadmap
 
-- `DP-TEST-001` — `test fix` is `active`, priority `5`, target date `2026-08-06`, branch `BUGFIX-test-fix`; planning only, not implemented.
 - Implement asynchronous workflow orchestration when approved.
 - Add downstream Notion synchronization without changing Git ownership.
 - Expand observability for indexing, retrieval, validation, backup and rollback.
@@ -278,4 +278,4 @@ The documentation upgrade validator additionally requires exact metadata labels,
 
 ## 15. Document boundary
 
-This page defines the current DevOps, QA evidence and context/documentation workflow operating model supported by supplied evidence. It does not certify a server-side SonarQube Quality Gate result, production readiness, cloud or Kubernetes deployment, tenant isolation, object-level authorization, database compatibility, migration execution or Notion synchronization.
+This page defines the current DevOps, QA evidence and context/documentation workflow operating model supported by supplied evidence. The `2026-08-07` configured QA run includes server-side Quality Gate `OK`, but this page does not certify production readiness, cloud or Kubernetes deployment, tenant isolation, object-level authorization, database compatibility, migration execution or Notion synchronization.
