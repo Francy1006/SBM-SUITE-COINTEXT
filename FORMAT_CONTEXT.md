@@ -37,8 +37,11 @@
 28. Output paths must be exact, repository-relative, unique and free of `..`, absolute paths and symlinks.
 29. Every output file except `manifest.json` requires a SHA-256 hash matching its final ZIP content.
 30. Any global validation failure must prevent context replacement.
-31. Project repositories use repository-relative paths under `SBM-SUITE/<brand>/<project>/`; the current repository paths are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`.
-32. Container project roots use canonical runtime paths under `/suite/<brand>/<project>` with the same brand and project segments; for DP-API, `canonical_project_path` is exactly `/suite/dp/DP-API`.
+31. Project repositories use repository-relative paths under `SBM-SUITE/<brand>/<project>/`. Canonical project routing is defined by the backend Project Registry and must be consumed from the source manifest/contract rather than inferred from `project_name`.
+32. Container project roots use canonical runtime paths under `/suite/<brand>/<project>` and must match the backend Project Registry exactly. Current required mappings include:
+    - `dp-api` → `/suite/dp/DP-API` → `SBM-SUITE/dp/DP-API/`
+    - `sbm-manager` → `/suite/sbm/SBM-MANAGER` → `SBM-SUITE/sbm/SBM-MANAGER/`
+   Never change path casing or derive brand/project segments heuristically.
 33. All workflow backups are stored below `SBM-SUITE/context/backup/`; no workflow may use or create a pluralized or workflow-local backup directory.
 
 ---
@@ -654,7 +657,14 @@ Rules:
 Required path pattern:
 
 ```text
+SBM-SUITE/<brand>/<project>/context/PROJECT_CONTEXT.md
+```
+
+Current canonical examples:
+
+```text
 SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
+SBM-SUITE/sbm/SBM-MANAGER/context/PROJECT_CONTEXT.md
 ```
 
 Required structure:
@@ -718,7 +728,14 @@ Rules:
 Required path pattern:
 
 ```text
+SBM-SUITE/<brand>/<project>/context/QA_CONTEXT.md
+```
+
+Current canonical examples:
+
+```text
 SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
+SBM-SUITE/sbm/SBM-MANAGER/context/QA_CONTEXT.md
 ```
 
 Required structure:
@@ -803,7 +820,14 @@ Rules:
 Required path pattern:
 
 ```text
+SBM-SUITE/<brand>/<project>/context/DEPLOY_CONTEXT.md
+```
+
+Current canonical examples:
+
+```text
 SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
+SBM-SUITE/sbm/SBM-MANAGER/context/DEPLOY_CONTEXT.md
 ```
 
 Required structure:
@@ -1057,15 +1081,15 @@ Every context export and upgrade workflow must:
 84. Forbid `append_to_section` for operational objectives, current QA, `SUITE_CONTEXT.md`, README files and all other current-state sections.
 85. Reject duplicate Objective IDs, duplicate project grouping headings and modifications, reordering or removal of existing `COMPLETED_OBJECTIVES.md` history.
 86. Do not copy a closed objective to `Completed work` in any `PROJECT_CONTEXT.md`.
-87. Require `canonical_project_path` to equal the canonical runtime root `/suite/dp/DP-API`; never construct runtime or repository paths from `project_name` or alter path casing.
-88. Require every project `target_file` to match its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping; never derive a `target_file` from `canonical_project_path`.
+87. Require `canonical_project_path` to equal the exact runtime root published for `project_name` by the backend Project Registry/source contract; never construct runtime or repository paths from `project_name` or alter path casing.
+88. Require every project `target_file` to match the exact repository-relative mapping published for the selected project. The patch archive contract below exposes exactly one concrete project mapping set as the backend format-validation anchor; this anchor does not select the runtime project. The actual project mapping for each run comes from the source manifest/backend Project Registry. Current repository roots are `SBM-SUITE/dp/DP-API/` for `dp-api` and `SBM-SUITE/sbm/SBM-MANAGER/` for `sbm-manager`. Never derive `target_file` by string manipulation of `canonical_project_path`.
 89. Generate only patch files listed in `supported_patch_paths`.
 90. Require the output `contract_version` to equal the source manifest `contract_version`.
 
 
 ### Patch archive contract
 
-Allowed patch paths and exact target mappings:
+Allowed global patch paths and exact target mappings:
 
 ```text
 patches/global-project-context.json
@@ -1094,7 +1118,22 @@ patches/global-readme.json
 
 patches/completed-objectives.json
 → SBM-SUITE/context/COMPLETED_OBJECTIVES.md
+```
 
+Project-scoped patch filenames:
+
+```text
+patches/project-context.json
+patches/project-qa-context.json
+patches/project-deploy-context.json
+patches/project-readme.json
+```
+
+The backend validates `FORMAT_CONTEXT.md` against exactly one concrete canonical project mapping set. This set is a format-validation anchor only; it does not select the project being processed.
+
+Backend format-validation anchor:
+
+```text
 patches/project-context.json
 → SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
 
@@ -1107,6 +1146,15 @@ patches/project-deploy-context.json
 patches/project-readme.json
 → SBM-SUITE/dp/DP-API/README.md
 ```
+
+Actual project routing is always resolved from the source manifest/backend Project Registry:
+
+| `project_name` | Canonical runtime root | Canonical repository root |
+|---|---|---|
+| `dp-api` | `/suite/dp/DP-API` | `SBM-SUITE/dp/DP-API/` |
+| `sbm-manager` | `/suite/sbm/SBM-MANAGER` | `SBM-SUITE/sbm/SBM-MANAGER/` |
+
+For a given run, every project-scoped patch must target only the exact repository path belonging to the literal `project_name` selected by the source manifest. The validation anchor above must never be used to override that selected-project routing.
 
 Every patch file must use this JSON structure:
 
@@ -1145,8 +1193,8 @@ Minimum manifest structure:
   "motivo": "<reason for the upgrade>",
   "backed_up_files": [
     {
-      "original_path": "SBM-SUITE/dp/DP-API/README.md",
-      "backup_path": "previous/SBM-SUITE/dp/DP-API/README.md",
+      "original_path": "SBM-SUITE/<brand>/<project>/README.md",
+      "backup_path": "previous/SBM-SUITE/<brand>/<project>/README.md",
       "sha256": "<SHA-256>"
     }
   ]
@@ -1165,7 +1213,7 @@ Required lifecycle and routing fields:
 {
   "contract_version": "<source contract_version>",
   "supported_patch_paths": [],
-  "canonical_project_path": "/suite/dp/DP-API",
+  "canonical_project_path": "<exact runtime path from source manifest/project registry>",
   "lifecycle_phase": "<planning-activation|implementation-progress|implementation-closure>",
   "objective_id": "<required objective ID>"
 }
@@ -1201,7 +1249,7 @@ Rules:
 - `allowed_files` contains every physical ZIP file, including `manifest.json`, and only authorized output paths.
 - `contract_version` exactly matches the source manifest value.
 - `supported_patch_paths` contains every generated patch and only paths authorized by the patch archive contract.
-- `canonical_project_path` is exactly `/suite/dp/DP-API`, the canonical runtime root; every project `target_file` independently matches its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping.
+- `canonical_project_path` exactly matches the selected project's runtime root from the source manifest/backend Project Registry; every project `target_file` independently matches that project's exact canonical repository-relative mapping.
 - `lifecycle_phase` and `objective_id` satisfy the applicable lifecycle rules.
 - No output path may be absolute, duplicated, contain `..` or reference a symlink.
 - The source manifest must never be copied as the output manifest.

@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md
 
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-08-07
 >
 > **Purpose**
 >
@@ -29,6 +29,9 @@ SBM Suite groups business APIs, internal platform APIs, data ownership, frontend
 Primary responsibilities:
 
 ```text
+SBM-MANAGER
+→ enterprise web frontend consuming DP-API and SBM-API
+
 DP-API
 → client-facing business API
 
@@ -47,6 +50,7 @@ SBM-SUITE/context
 | ID | Project | Objective | Status | Priority | Target date | Branch | Documentation |
 |---|---|---|---|---:|---|---|---|
 | OBJ-CTX-001 | SBM-SUITE | Validate and stabilize the expanded context governance model, synchronized section patches and project-tree evidence | active | 5 |  | FEATURE-expands-context-governance | `context/documentation/pages/AI Architect Roadmap/`, `context/documentation/pages/SBM-Suite/` |
+| SBM-MANAGER-001 | SBM-MANAGER | Integrar SBM-MANAGER completamente a SBM Suite, incluyendo contextos, lifecycle scripts, QA/SonarQube, registro en sbm-ai-assistant, sincronización global y actualización del diagrama canónico de arquitectura en SUITE_CONTEXT.md. | active | 5 | 2026-08-07 | `FEATURE-integrates-sbm-manager` | `context/documentation/pages/🤖 AI Architect Roadmap/🏢 SBM-Suite 3a50bde8acd580d0a068d6abc3542603.md` |
 
 Rules:
 
@@ -75,17 +79,19 @@ Rules:
 | Project | Ownership | Main responsibilities | Source of truth |
 |---|---|---|---|
 | DP-API | Client-facing business operations | Products, materials, services, catalogs, tickets, providers, pricing, branches and other client domains | Project code, project contexts and canonical APIs |
+| SBM-MANAGER | Enterprise web frontend | Vue 3 management UI, frontend orchestration, reusable CRUD behavior and explicit DP-API / SBM-API consumption | Project code, project contexts and frontend API clients |
 | SBM-API | Internal platform operations | Internal administration, franchise, fiscal, inventory, calculation, configuration and platform services | Project code and project contexts |
 | sbm-ai-assistant | AI and knowledge orchestration | Embeddings, Qdrant, RAG, Slack, context export/upgrade and future documentation workflows | AI repository and indexed Git Markdown |
 | SBM-SUITE/context | Global governance | Cross-project context, architecture, business, QA, security, data, decisions and workflow contracts | Git Markdown |
 
-Canonical project roots are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Their mounted container roots are `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`.
+Canonical project roots include `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-MANAGER/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Their canonical runtime roots are `/suite/dp/DP-API`, `/suite/sbm/SBM-MANAGER`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`.
 
 ## 6. Project objective summaries
 
 | Project | Purpose | Active objective | Pending objectives | Branch | Main context | QA context | Documentation |
 |---|---|---|---|---|---|---|---|
 | DP-API | Client-facing business API | test fix | Dedicated Service app; Material consumer migration; duplicate Product endpoint retirement | `BUGFIX-test-fix` | `dp/DP-API/context/PROJECT_CONTEXT.md` | `dp/DP-API/context/QA_CONTEXT.md` | `context/documentation/pages/QA & Testing/`, `context/documentation/pages/Development Roadmap/` |
+| SBM-MANAGER | Enterprise web frontend | Integrar SBM-MANAGER completamente a SBM Suite | Not defined | `FEATURE-integrates-sbm-manager` | `sbm/SBM-MANAGER/context/PROJECT_CONTEXT.md` | `sbm/SBM-MANAGER/context/QA_CONTEXT.md` | `context/documentation/pages/🤖 AI Architect Roadmap/🏢 SBM-Suite 3a50bde8acd580d0a068d6abc3542603.md` |
 | SBM-API | Internal platform API | Not defined | Not defined | N/A | `sbm/SBM-API/context/PROJECT_CONTEXT.md` | `sbm/SBM-API/context/QA_CONTEXT.md` | To be mapped |
 | sbm-ai-assistant | AI orchestration and RAG | Support expanded context governance and project-tree evidence | Add documentation export, upgrade and dedicated collection | `FEATURE-expands-context-governance` | `sbm/sbm-ai-assistant/context/PROJECT_CONTEXT.md` | `sbm/sbm-ai-assistant/context/QA_CONTEXT.md` | `context/documentation/pages/AI Engineering/`, `context/documentation/pages/SBM-Suite/` |
 | SBM-SUITE | Global governance and orchestration | Implement expanded context governance | Implement documentation workflow | `FEATURE-expands-context-governance` | `context/PROJECT_CONTEXT.md` | `context/QA_CONTEXT.md` | `context/documentation/` |
@@ -169,6 +175,10 @@ sbm_documentation
 DP-API
 → client-facing requests
 → canonical business operations
+
+SBM-MANAGER
+→ DP-API for client-owned operations
+→ SBM-API for internal/platform operations
 
 SBM-API
 → internal platform operations
@@ -333,6 +343,7 @@ Verified current capabilities include:
 
 Planned or incomplete capabilities:
 
+- fresh SBM-MANAGER QA execution and end-to-end context lifecycle validation;
 - complete cross-project synchronization coverage beyond the validated DP-API flow;
 - expanded context types and remaining project contexts;
 - dedicated documentation workflow and `sbm_documentation` validation;
@@ -343,13 +354,13 @@ Planned or incomplete capabilities:
 
 1. Git Markdown is the primary source of truth during the manual stage.
 2. Qdrant is a semantic index, not an authoritative store.
-3. Context and documentation use separate Qdrant collections.
-4. QA execution is performed by `qa-check.sh`; QA interpretation occurs in the context workflow.
-5. Project objective changes synchronize to the global project context.
-6. Project QA changes synchronize to the global QA context.
-7. Context and documentation upgrades use separate deploy and upgrade workflows.
-8. ChatGPT generates section-level context patches rather than complete context documents.
-9. Documentation upgrade initially modifies only existing authorized pages.
+4. Context and documentation use separate Qdrant collections.
+5. QA execution is performed by `qa-check.sh`; QA interpretation occurs in the context workflow.
+6. Project objective changes synchronize to the global project context.
+7. Project QA changes synchronize to the global QA context.
+8. Context and documentation upgrades use separate deploy and upgrade workflows.
+9. ChatGPT generates section-level context patches rather than complete context documents.
+10. Documentation upgrade initially modifies only existing authorized pages.
 10. Branch names are assigned before development using `FEATURE`, `BUGFIX` or `HOTFIX` and a maximum four-word slug.
 11. Commit metadata is returned by the upgrade command to support one final commit.
 12. Future asynchronous processing may use database configuration flags.
@@ -388,6 +399,7 @@ Planned or incomplete capabilities:
 - evidence and user-guided execution modes defined;
 - documentation exported to Git under `context/documentation/`;
 - expanded `FORMAT_CONTEXT.md` contract defined.
+- SBM-MANAGER canonical project context, QA context, deploy context and lifecycle scripts prepared;
 - section-level patch validation and application implemented;
 - project-tree generation integrated into context deployment;
 - context export response persistence and completion validation implemented;
@@ -396,15 +408,16 @@ Planned or incomplete capabilities:
 
 ## 16. Pending work
 
-1. Complete validated project-to-global synchronization coverage for the remaining projects.
-2. Create and populate `SECURITY_CONTEXT.md` with validated evidence.
-3. Create and populate `DATA_CONTEXT.md` with validated evidence.
-4. Create and populate `DECISIONS_CONTEXT.md` with validated evidence.
-5. Complete and validate the documentation deploy and upgrade workflow.
-6. Create and validate `sbm_documentation`.
-7. Map all documentation pages to relevant contexts.
-8. Add later Git-to-Notion synchronization.
-9. Add later asynchronous database-flag orchestration.
+1. Validate SBM-MANAGER project-to-global synchronization and QA lifecycle with fresh evidence.
+2. Complete validated project-to-global synchronization coverage for the remaining projects.
+4. Create and populate `SECURITY_CONTEXT.md` with validated evidence.
+4. Create and populate `DATA_CONTEXT.md` with validated evidence.
+5. Create and populate `DECISIONS_CONTEXT.md` with validated evidence.
+6. Complete and validate the documentation deploy and upgrade workflow.
+7. Create and validate `sbm_documentation`.
+8. Map all documentation pages to relevant contexts.
+9. Add later Git-to-Notion synchronization.
+10. Add later asynchronous database-flag orchestration.
 
 ## 17. Required behavior
 
@@ -412,11 +425,11 @@ Before changes:
 
 1. identify the target project;
 2. read applicable contexts;
-3. inspect actual repository state;
-4. execute QA when required;
-5. verify database ownership when relevant;
-6. report missing information;
-7. define or update the objective as active or pending and assign its branch before implementation.
+4. inspect actual repository state;
+5. execute QA when required;
+6. verify database ownership when relevant;
+7. report missing information;
+8. define or update the objective as active or pending and assign its branch before implementation.
 
 During changes:
 

@@ -1,6 +1,6 @@
 # QA_CONTEXT.md
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-08-07
 >
 > **Purpose**
 >
@@ -70,7 +70,7 @@ A gate may be bypassed only through a documented accepted exception.
 |---|---|---:|---:|---:|---|---|---|---:|---|
 | DP-API | `SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md` | 65 | 65 | 0 | 88% | Quality Gate OK | 2026-08-07 | 3 | `qa-results.md`: 65 tests passed; coverage 88%; SonarScanner exit code 0; Quality Gate OK |
 | SBM-API | `SBM-SUITE/sbm/SBM-API/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
-| SBM-MANAGER | `SBM-SUITE/sbm/SBM-MANAGER/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
+| SBM-MANAGER | `SBM-SUITE/sbm/SBM-MANAGER/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | not validated | N/A | 3 | Project QA context and `qa-check.sh` configured; fresh `qa-results.md` pending |
 | SBM-DB | `SBM-SUITE/sbm/SBM-DB/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 4 | Database QA context pending |
 | SBM-AI-ASSISTANT | `SBM-SUITE/sbm/sbm-ai-assistant/context/QA_CONTEXT.md` | N/A | N/A | N/A | N/A | N/A | N/A | 3 | Project QA context pending |
 
@@ -127,7 +127,7 @@ deployment
 |---|---|---|---|---|---|---|
 | DP-API | pytest-cov | 88% | N/A | recorded | 2026-08-02 | `qa-results.md`; `coverage.xml` generated; exit code 0 |
 | SBM-API | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
-| SBM-MANAGER | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
+| SBM-MANAGER | Vitest / V8 | N/A | lines/statements/functions 70%; branches 60% | not validated | N/A | Project QA configuration present; fresh `qa-results.md` pending |
 | SBM-DB | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
 | SBM-AI-ASSISTANT | N/A | N/A | N/A | not validated | N/A | No coverage evidence supplied |
 
@@ -145,7 +145,7 @@ Coverage rules:
 |---|---|---|---|---:|---|---|
 | DP-API | SonarQube | DP-API | analysis successful | N/A | 2026-08-02 | `qa-results.md`; scanner exit code 0; analysis uploaded; execution successful |
 | SBM-API | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
-| SBM-MANAGER | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
+| SBM-MANAGER | SonarQube | SBM-MANAGER | not validated | N/A | N/A | Project SonarQube configuration present; fresh server-side Quality Gate evidence pending |
 | SBM-DB | N/A | N/A | not validated | N/A | N/A | No static-analysis evidence supplied |
 | SBM-AI-ASSISTANT | SonarQube | N/A | not validated | N/A | N/A | No SonarQube evidence supplied |
 
@@ -352,7 +352,7 @@ Current suite QA state:
 
 ```text
 Status: PARTIALLY VALIDATED
-Reason: DP-API supplied successful current test, coverage, SonarScanner execution and server-side Quality Gate evidence; other projects and transversal gates remain incomplete.
+Reason: DP-API supplied successful current test, coverage, SonarScanner execution and server-side Quality Gate evidence; SBM-MANAGER QA is configured but has no fresh execution evidence yet; other projects and transversal gates remain incomplete.
 ```
 
 Verified DP-API closure evidence:
@@ -382,7 +382,8 @@ Tenant isolation, object permissions, cross-project integration, deployment and 
 7. Add frontend-to-API contract tests.
 8. Add AI Tool-to-API authorization tests.
 9. Add API-to-database compatibility tests.
-10. Create QA contexts for remaining projects.
+10. Execute fresh SBM-MANAGER QA and record `context/qa-results.md`.
+11. Create QA contexts for remaining projects.
 
 ## 18. Related documentation
 

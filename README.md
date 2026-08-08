@@ -24,11 +24,12 @@ SBM-SUITE/
 │   └── project-tree.txt
 ├── dp/DP-API/
 └── sbm/
+    ├── SBM-MANAGER/
     ├── SBM-API/
     └── sbm-ai-assistant/
 ```
 
-Container project roots mirror the brand hierarchy under `/suite/<brand>/<project>`.
+Container project roots mirror the brand hierarchy under `/suite/<brand>/<project>`, including `/suite/sbm/SBM-MANAGER` for the web frontend.
 
 ## Requirements
 

@@ -1,6 +1,6 @@
 # SUITE_CONTEXT.md
 
-> **Last updated:** 2026-08-06
+> **Last updated:** 2026-08-07
 >
 > **Purpose**
 >
@@ -17,6 +17,9 @@ SBM Suite is a modular ERP and business platform composed of independent reposit
 Primary responsibility model:
 
 ```text
+Enterprise web interaction
+→ SBM-MANAGER
+
 Client business operations
 → DP-API
 
@@ -64,13 +67,13 @@ Current business scope includes products, materials, services, catalogs, pricing
 | sbm-ai-assistant | SBM | AI orchestration, RAG, embeddings and Tools | AI-assisted workflows |
 | SBM-SUITE/context | SBM | Global context and documentation contracts | Context governance |
 
-Canonical repository paths currently evidenced here are `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Container mounts preserve those brand segments as `/suite/dp/DP-API`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`. Repository paths for `SBM-MANAGER` and `SBM-DB` remain `N/A` in this document until explicitly evidenced.
+Canonical repository paths currently evidenced here include `SBM-SUITE/dp/DP-API/`, `SBM-SUITE/sbm/SBM-MANAGER/`, `SBM-SUITE/sbm/SBM-API/` and `SBM-SUITE/sbm/sbm-ai-assistant/`. Canonical runtime roots preserve those brand segments as `/suite/dp/DP-API`, `/suite/sbm/SBM-MANAGER`, `/suite/sbm/SBM-API` and `/suite/sbm/sbm-ai-assistant`. The repository path for `SBM-DB` remains `N/A` in this document until explicitly evidenced.
 
 ## 5. Applications and services
 
 | Brand | Project | Application or service | Type | Description | Language | Framework | Version | Runtime | Owner |
 |---|---|---|---|---|---|---|---|---|---|
-| SBM | SBM-MANAGER | Enterprise web frontend | web frontend | Web interface consuming DP-API and SBM-API | JavaScript | Vue.js 3 | N/A | N/A | SBM-MANAGER |
+| SBM | SBM-MANAGER | Enterprise web frontend | web frontend | Web interface consuming DP-API and SBM-API | JavaScript | Vue.js 3 | N/A | container | SBM-MANAGER |
 | Ditaly Pasta | DP-API | Client-facing API | API | Business operations for authorized client users | Python | Django REST Framework | N/A | container | DP-API |
 | SBM | SBM-API | Internal platform API | API | Critical, contractual and administrative platform operations | Python | Django REST Framework | N/A | container | SBM-API |
 | SBM | sbm-ai-assistant | AI orchestrator | API / AI service | Intent routing, RAG, embeddings and explicit Tools | Python | FastAPI | N/A | container | sbm-ai-assistant |
@@ -340,6 +343,7 @@ Cross-project communication must use explicit APIs or contracts. Direct reposito
 
 | Component | Container or service | Internal port | Host port | Network | Status |
 |---|---|---:|---:|---|---|
+| SBM-MANAGER | app / sbm_manager | 8080 | 8080 | sbm-network | active |
 | DP-API | dp-core | 8000 | 8081 | sbm-network | active |
 | SBM-API | sbm-core | 8000 | 8082 | sbm-network | active |
 | sbm-ai-assistant | backend | 8000 | 8000 | sbm-network | active |
@@ -356,6 +360,7 @@ Shared configuration rules:
 
 - secrets and `.env` values must remain outside Git and ZIP packages;
 - project-specific environment files own local runtime values;
+- `SBM-MANAGER` uses canonical repository root `SBM-SUITE/sbm/SBM-MANAGER/` and runtime root `/suite/sbm/SBM-MANAGER`;
 - project context scripts resolve the absolute suite root from `SBM_SUITE_ROOT`;
 - suite-level context contracts, prompts, input, output and project-tree artifacts are resolved below `SBM-SUITE/context`;
 - container requests use repository paths mounted below `/suite`, including `/suite/<brand>/<project>` for project roots;
@@ -440,6 +445,8 @@ Current deployment principles:
 
 Current verified direction:
 
+- SBM-MANAGER is the canonical Vue 3 web frontend consuming DP-API and SBM-API through explicit frontend clients.
+- SBM-MANAGER context, QA and lifecycle scaffolding is present; fresh QA and lifecycle execution remain pending.
 - Product is the accepted DP-API reference vertical.
 - Material is separated into its own domain app.
 - Service is a planned backend domain.

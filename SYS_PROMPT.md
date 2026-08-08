@@ -9,7 +9,7 @@ project_name={{PROJECT_NAME}}
 workflow=context-upgrade
 execution_mode=auto
 contract_version={{CONTRACT_VERSION}}
-canonical_project_path=/suite/dp/DP-API
+canonical_project_path=<from source manifest/backend Project Registry>
 lifecycle_phase={{LIFECYCLE_PHASE}}
 objective_id={{OBJECTIVE_ID}}
 ```
@@ -28,20 +28,23 @@ The project being processed is:
 {{PROJECT_NAME}}
 ```
 
-The canonical project path is supplied by the source manifest and must resolve exactly to:
-
-```text
-/suite/dp/DP-API
-```
+The canonical project path is supplied by the source manifest/backend Project Registry and must match the selected project exactly.
 
 Never construct a repository path by concatenating `project_name`, changing case, or deriving a brand or slug.
 
-The canonical runtime and target repository-relative mapping for this contract is:
+Current required mappings:
 
 ```text
-DP-API            → canonical runtime: /suite/dp/DP-API
-                  → target repository-relative: SBM-SUITE/dp/DP-API/
+dp-api
+→ canonical runtime: /suite/dp/DP-API
+→ target repository-relative: SBM-SUITE/dp/DP-API/
+
+sbm-manager
+→ canonical runtime: /suite/sbm/SBM-MANAGER
+→ target repository-relative: SBM-SUITE/sbm/SBM-MANAGER/
 ```
+
+Use the mapping for the literal `project_name` in the source manifest. Reject unknown projects or mismatched runtime/repository mappings.
 
 ## Required inputs
 
@@ -308,7 +311,7 @@ If only specific context operations are unsafe, omit those operations or patch f
 
 ## Allowed target files
 
-Patches may target only:
+Suite-level patches may target only:
 
 ```text
 SBM-SUITE/context/PROJECT_CONTEXT.md
@@ -320,15 +323,27 @@ SBM-SUITE/context/DATA_CONTEXT.md
 SBM-SUITE/context/DECISIONS_CONTEXT.md
 SBM-SUITE/context/README.md
 SBM-SUITE/context/COMPLETED_OBJECTIVES.md
-SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
-SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
-SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
-SBM-SUITE/dp/DP-API/README.md
+```
+
+Project-local patches may target only the four exact repository paths resolved for the literal `project_name` by the source manifest/backend Project Registry:
+
+```text
+context/PROJECT_CONTEXT.md
+context/QA_CONTEXT.md
+context/DEPLOY_CONTEXT.md
+README.md
+```
+
+Current registry roots:
+
+```text
+dp-api       → SBM-SUITE/dp/DP-API/
+sbm-manager  → SBM-SUITE/sbm/SBM-MANAGER/
 ```
 
 Create a patch only when supplied evidence or an explicit user-guided objective justifies changing the target file.
 
-Do not modify files belonging to other projects.
+Never infer or construct a project repository root from `project_name`. Never include project-local targets for more than one project in the same upgrade. For each run, authorize only the four project-local targets belonging to the selected source-manifest/backend-registry mapping.
 
 ## Protected files
 
@@ -378,7 +393,7 @@ Execute these steps in order. Do not skip, merge or reorder them.
 2. Read the supplied input `manifest.json` completely.
    - validate `contract_version`, `supported_patch_paths`, `canonical_project_path`, `lifecycle_phase` and `objective_id` before reading implementation evidence;
    - reject the workflow if `lifecycle_phase` or `objective_id` is absent or invalid;
-   - validate `canonical_project_path` as the canonical runtime root, use the exact repository-relative mapping for every project `target_file`, and never concatenate `project_name`;
+   - validate `canonical_project_path` against the selected project's backend Project Registry mapping, use that project's exact repository-relative mapping for every project `target_file`, and never concatenate `project_name`;
 3. Separate all package entries into exactly four groups:
    - protected workflow contracts;
    - input evidence files;
@@ -448,7 +463,7 @@ Before including a patch file, verify all of the following:
 15. every unrelated row, objective, project QA summary and reusable component remains unchanged;
 16. no partial table is present;
 17. the patch filename appears in `manifest.supported_patch_paths`;
-18. every project `target_file` matches its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping, independently of the `/suite/dp/DP-API` runtime value in `manifest.canonical_project_path`.
+18. every project `target_file` matches the exact repository-relative mapping for the selected `project_name`, independently of the runtime value in `manifest.canonical_project_path`; `dp-api` uses `SBM-SUITE/dp/DP-API/...` and `sbm-manager` uses `SBM-SUITE/sbm/SBM-MANAGER/...`.
 
 If a complete snapshot of the target section is unavailable, exclude the patch instead of generating a partial section. If any operation fails, exclude that operation. If a patch has no valid operations after validation, exclude the patch file. Report every omission and its reason in `EXECUTIVE_README.md`.
 
@@ -558,16 +573,34 @@ patches/completed-objectives.json
 → SBM-SUITE/context/COMPLETED_OBJECTIVES.md
 
 patches/project-context.json
-→ SBM-SUITE/dp/DP-API/context/PROJECT_CONTEXT.md
+→ selected project's canonical context/PROJECT_CONTEXT.md
 
 patches/project-qa-context.json
-→ SBM-SUITE/dp/DP-API/context/QA_CONTEXT.md
+→ selected project's canonical context/QA_CONTEXT.md
 
 patches/project-deploy-context.json
-→ SBM-SUITE/dp/DP-API/context/DEPLOY_CONTEXT.md
+→ selected project's canonical context/DEPLOY_CONTEXT.md
 
 patches/project-readme.json
-→ SBM-SUITE/dp/DP-API/README.md
+→ selected project's canonical README.md
+
+Selected-project routing:
+
+| `project_name` | Runtime root | Repository root |
+|---|---|---|
+| `dp-api` | `/suite/dp/DP-API` | `SBM-SUITE/dp/DP-API/` |
+| `sbm-manager` | `/suite/sbm/SBM-MANAGER` | `SBM-SUITE/sbm/SBM-MANAGER/` |
+
+For the selected repository root, the project-scoped patch suffixes are fixed:
+
+```text
+patches/project-context.json        → context/PROJECT_CONTEXT.md
+patches/project-qa-context.json     → context/QA_CONTEXT.md
+patches/project-deploy-context.json → context/DEPLOY_CONTEXT.md
+patches/project-readme.json         → README.md
+```
+
+The backend Project Registry/source manifest is authoritative for joining the selected repository root with these suffixes.
 ```
 
 Include only patch files that contain at least one valid operation.
@@ -1168,7 +1201,7 @@ The manifest must contain:
   "supported_patch_paths": [
     "patches/project-context.json"
   ],
-  "canonical_project_path": "/suite/dp/DP-API",
+  "canonical_project_path": "<exact runtime path from source manifest/project registry>",
   "lifecycle_phase": "implementation-progress",
   "objective_id": "<OBJECTIVE_ID>",
   "user_prompt_file": null,
@@ -1227,8 +1260,8 @@ Mandatory ZIP manifest set contract:
 - `contract_version` must be present and exactly match the source manifest `contract_version`;
 - `supported_patch_paths` must be present and contain only authorized patch paths from this contract;
 - every generated patch path must appear in `supported_patch_paths`;
-- `canonical_project_path` must be exactly `/suite/dp/DP-API`, the canonical runtime root;
-- project `target_file` values must use their exact `SBM-SUITE/dp/DP-API/...` repository-relative mappings and must never be constructed from `project_name` or the runtime path;
+- `canonical_project_path` must exactly match the runtime root published for `project_name` by the source manifest/backend Project Registry;
+- project `target_file` values must use the exact repository-relative mappings for the selected project and must never be constructed from `project_name` or the runtime path;
 - `lifecycle_phase` must be present and equal `planning-activation`, `implementation-progress` or `implementation-closure`;
 - `objective_id` must be present and non-empty for every lifecycle phase;
 - `qa` must be an object when `lifecycle_phase` is `implementation-closure`;
@@ -1259,7 +1292,7 @@ Strict manifest set rules:
 - `allowed_files` contains every physical ZIP file, including `manifest.json`, and only output paths permitted by this prompt;
 - `contract_version` equals the source manifest value;
 - `supported_patch_paths` contains every generated patch path and no unsupported patch path;
-- `canonical_project_path` is exactly `/suite/dp/DP-API`, while project `target_file` values match their exact `SBM-SUITE/dp/DP-API/...` repository-relative mappings; `lifecycle_phase` and `objective_id` satisfy the lifecycle contract;
+- `canonical_project_path` exactly matches the selected project's runtime root from the source manifest/backend Project Registry, while project `target_file` values match that project's exact canonical repository-relative mappings; `lifecycle_phase` and `objective_id` satisfy the lifecycle contract;
 - for `implementation-closure`, `qa.status` is exactly `passed` or `success` and is supported by explicit successful `qa-results.md` evidence;
 - `updated_files` contains exactly the files physically present in the ZIP except `manifest.json`;
 - every physical ZIP file, including `manifest.json`, must appear in `allowed_files`;
@@ -1304,7 +1337,7 @@ Before returning `context-upgrade.zip`, verify:
 2. the workflow is `context-upgrade`;
 3. the filename is exactly `context-upgrade.zip`;
 4. all required root files are present;
-5. `USER_PROMPT.md` presence matches the execution mode; `contract_version` matches the source manifest, `canonical_project_path` is exactly `/suite/dp/DP-API`, every project `target_file` matches its exact `SBM-SUITE/dp/DP-API/...` repository-relative mapping, and `lifecycle_phase` plus `objective_id` are present and valid;
+5. `USER_PROMPT.md` presence matches the execution mode; `contract_version` matches the source manifest, `canonical_project_path` exactly matches the selected project's backend Project Registry mapping, every project `target_file` matches that project's exact repository-relative mapping, and `lifecycle_phase` plus `objective_id` are present and valid;
 6. every patch filename, target mapping, operation and heading is valid;
 7. all required tables preserve exact columns and ordering;
 8. synchronization rules are satisfied or explicitly reported as omitted;
