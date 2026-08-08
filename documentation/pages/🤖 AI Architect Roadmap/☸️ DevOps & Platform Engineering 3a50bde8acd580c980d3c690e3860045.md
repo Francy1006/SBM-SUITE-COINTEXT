@@ -256,6 +256,7 @@ The documentation upgrade validator additionally requires exact metadata labels,
 
 ## 12. Roadmap
 
+- Complete and validate `SBM-MANAGER` lifecycle integration across context and documentation workflows, QA/SonarQube evidence, and the canonical `sbm-ai-assistant` project contract before promoting it to current-state documentation.
 - Implement asynchronous workflow orchestration when approved.
 - Add downstream Notion synchronization without changing Git ownership.
 - Expand observability for indexing, retrieval, validation, backup and rollback.
